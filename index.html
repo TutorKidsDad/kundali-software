@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#7c2d12">
+  <title>Kundli Explorer — Vedic Birth Chart</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="./" aria-label="Kundli Explorer home">
+      <span class="brand-mark">ॐ</span>
+      <span><strong data-i18n="appName">Kundli Explorer</strong><small data-i18n="tagline">Vedic birth chart workspace</small></span>
+    </a>
+    <div class="header-actions">
+      <label class="sr-only" for="language" data-i18n="language">Language</label>
+      <select id="language" aria-label="Language">
+        <option value="en">English</option>
+        <option value="hi">हिन्दी</option>
+      </select>
+    </div>
+  </header>
+
+  <main class="page">
+    <section class="hero">
+      <div>
+        <p class="eyebrow" data-i18n="eyebrow">YOUR PERSONAL JYOTISH WORKSPACE</p>
+        <h1 data-i18n="title">Explore your Kundli</h1>
+        <p class="hero-copy" data-i18n="intro">Enter birth details to prepare a Vedic chart. This first release is an interactive interface prototype; planetary positions are sample data until the astronomy engine is integrated and verified.</p>
+      </div>
+      <div class="hero-symbol" aria-hidden="true">✦</div>
+    </section>
+
+    <div class="notice" role="note">
+      <strong data-i18n="prototypeLabel">Prototype notice</strong>
+      <span data-i18n="prototypeText">The chart below uses illustrative sample placements. It does not yet calculate a real horoscope.</span>
+    </div>
+
+    <section class="workspace">
+      <aside class="panel birth-panel">
+        <div class="panel-heading">
+          <div>
+            <p class="eyebrow" data-i18n="step1">STEP 01</p>
+            <h2 data-i18n="birthDetails">Birth details</h2>
+          </div>
+          <span class="heading-icon" aria-hidden="true">☼</span>
+        </div>
+        <form id="birth-form">
+          <label for="person-name" data-i18n="name">Name (optional)</label>
+          <input id="person-name" name="name" autocomplete="name" placeholder="e.g. Arya">
+
+          <div class="field-grid">
+            <div>
+              <label for="birth-date" data-i18n="date">Date of birth</label>
+              <input id="birth-date" name="date" type="date" required>
+            </div>
+            <div>
+              <label for="birth-time" data-i18n="time">Local birth time</label>
+              <input id="birth-time" name="time" type="time" required>
+            </div>
+          </div>
+
+          <label for="birth-place" data-i18n="place">Birthplace</label>
+          <input id="birth-place" name="place" placeholder="City, region, country" required>
+          <p class="field-help" data-i18n="placeHelp">For accurate calculations, the next version will resolve coordinates and historical time zone.</p>
+
+          <div class="field-grid">
+            <div>
+              <label for="ayanamsha" data-i18n="ayanamsha">Ayanamsha</label>
+              <select id="ayanamsha" name="ayanamsha">
+                <option value="lahiri">Lahiri</option>
+              </select>
+            </div>
+            <div>
+              <label for="nodes" data-i18n="nodes">Rahu/Ketu</label>
+              <select id="nodes" name="nodes">
+                <option value="mean" data-i18n="meanNode">Mean node</option>
+                <option value="true" data-i18n="trueNode">True node</option>
+              </select>
+            </div>
+          </div>
+
+          <button class="primary-button" type="submit">
+            <span data-i18n="prepareChart">Prepare chart preview</span><span aria-hidden="true">↗</span>
+          </button>
+          <p class="form-status" id="form-status" aria-live="polite"></p>
+        </form>
+        <div class="privacy-note"><span aria-hidden="true">🔒</span><span data-i18n="privacy">This prototype keeps entered details in this page only. Nothing is uploaded to a server.</span></div>
+      </aside>
+
+      <section class="panel chart-panel">
+        <div class="panel-heading chart-heading">
+          <div>
+            <p class="eyebrow" data-i18n="step2">STEP 02</p>
+            <h2 data-i18n="lagnaChart">Lagna Kundli · D1</h2>
+            <p class="subheading" id="chart-caption" data-i18n="sampleCaption">Illustrative sample chart · select a house</p>
+          </div>
+          <span class="chart-tag">D1</span>
+        </div>
+
+        <div class="chart-layout">
+          <div class="kundli-chart" id="kundli-chart" role="group" aria-label="Interactive North Indian Kundli chart">
+            <svg class="chart-lines" viewBox="0 0 600 600" aria-hidden="true">
+              <rect x="2" y="2" width="596" height="596" rx="4"></rect>
+              <path d="M2 2 L598 598 M598 2 L2 598"></path>
+              <path d="M300 2 L598 300 L300 598 L2 300 Z"></path>
+            </svg>
+            <button class="house house-1" data-house="1" aria-label="House 1"><span class="house-number">1</span><span class="house-sign">Aries</span><span class="planet-list">Asc · Ma</span></button>
+            <button class="house house-2" data-house="2" aria-label="House 2"><span class="house-number">2</span><span class="house-sign">Taurus</span><span class="planet-list">Ve</span></button>
+            <button class="house house-3" data-house="3" aria-label="House 3"><span class="house-number">3</span><span class="house-sign">Gemini</span><span class="planet-list">Mo</span></button>
+            <button class="house house-4" data-house="4" aria-label="House 4"><span class="house-number">4</span><span class="house-sign">Cancer</span><span class="planet-list">—</span></button>
+            <button class="house house-5" data-house="5" aria-label="House 5"><span class="house-number">5</span><span class="house-sign">Leo</span><span class="planet-list">Su</span></button>
+            <button class="house house-6" data-house="6" aria-label="House 6"><span class="house-number">6</span><span class="house-sign">Virgo</span><span class="planet-list">Me</span></button>
+            <button class="house house-7" data-house="7" aria-label="House 7"><span class="house-number">7</span><span class="house-sign">Libra</span><span class="planet-list">Ke</span></button>
+            <button class="house house-8" data-house="8" aria-label="House 8"><span class="house-number">8</span><span class="house-sign">Scorpio</span><span class="planet-list">Sa</span></button>
+            <button class="house house-9" data-house="9" aria-label="House 9"><span class="house-number">9</span><span class="house-sign">Sagittarius</span><span class="planet-list">Ju</span></button>
+            <button class="house house-10" data-house="10" aria-label="House 10"><span class="house-number">10</span><span class="house-sign">Capricorn</span><span class="planet-list">—</span></button>
+            <button class="house house-11" data-house="11" aria-label="House 11"><span class="house-number">11</span><span class="house-sign">Aquarius</span><span class="planet-list">Ra</span></button>
+            <button class="house house-12" data-house="12" aria-label="House 12"><span class="house-number">12</span><span class="house-sign">Pisces</span><span class="planet-list">—</span></button>
+            <div class="chart-center" aria-hidden="true"><span>ॐ</span><small data-i18n="d1Chart">D1 RĀŚI</small></div>
+          </div>
+          <aside class="house-detail" id="house-detail" aria-live="polite">
+            <p class="eyebrow" data-i18n="selectedHouse">SELECTED HOUSE</p>
+            <h3 id="detail-title">House 1</h3>
+            <p class="detail-sign" id="detail-sign">Aries · Mesha</p>
+            <div class="detail-rule"></div>
+            <p class="detail-label" data-i18n="samplePlanets">Sample placements</p>
+            <p id="detail-planets" class="detail-planets">Ascendant, Mars</p>
+            <p class="detail-note" data-i18n="houseNote">House meanings and calculated placements will be added after the chart engine is integrated.</p>
+          </aside>
+        </div>
+
+        <div class="planet-summary">
+          <div class="summary-heading">
+            <div><p class="eyebrow" data-i18n="referenceData">REFERENCE DATA</p><h3 data-i18n="planetaryTable">Planetary positions</h3></div>
+            <span class="sample-pill" data-i18n="sampleData">SAMPLE DATA</span>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th data-i18n="planet">Planet</th><th data-i18n="sign">Sign</th><th data-i18n="degree">Degree</th><th data-i18n="nakshatra">Nakshatra</th></tr></thead>
+              <tbody id="planet-table">
+                <tr><td>Sun</td><td>Leo</td><td>12° 10′</td><td>Magha</td></tr>
+                <tr><td>Moon</td><td>Gemini</td><td>06° 09′</td><td>Ardra</td></tr>
+                <tr><td>Mars</td><td>Aries</td><td>08° 22′</td><td>Ashwini</td></tr>
+                <tr><td>Mercury</td><td>Virgo</td><td>09° 29′</td><td>Uttara Phalguni</td></tr>
+                <tr><td>Jupiter</td><td>Sagittarius</td><td>11° 03′</td><td>Mula</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+    </section>
+
+    <section class="next-steps">
+      <div><p class="eyebrow" data-i18n="comingNext">COMING NEXT</p><h2 data-i18n="buildAccurate">From chart preview to a calculated Kundli</h2></div>
+      <div class="feature-list">
+        <span>01 <b data-i18n="ephemeris">Verified planetary ephemeris</b></span>
+        <span>02 <b data-i18n="navamsa">Navamsha D9</b></span>
+        <span>03 <b data-i18n="vimshottari">Vimshottari dasha</b></span>
+        <span>04 <b data-i18n="yogas">Yoga rules and report</b></span>
+      </div>
+    </section>
+    <footer><span>© Kundli Explorer</span><span data-i18n="footer">Open-source project · Calculation engine not yet enabled</span></footer>
+  </main>
+  <script src="js/translations.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
