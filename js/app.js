@@ -10,6 +10,16 @@
  const t=k=>translations[lang][k]||translations.en[k]||k;
  function sign(i){return (lang==='hi'?signsHi:signsEn)[i%12]}
  function planetsAt(n){return chartData()?.planets.filter(p=>p.house===n)||[]}
+ function formatDMS(value){
+  if(value==null || !Number.isFinite(Number(value)))return '—';
+  let totalSeconds=Math.round(Number(value)*3600);
+  const negative=totalSeconds<0;
+  totalSeconds=Math.abs(totalSeconds);
+  const degrees=Math.floor(totalSeconds/3600);
+  const minutes=Math.floor((totalSeconds%3600)/60);
+  const seconds=totalSeconds%60;
+  return `${negative?'-':''}${degrees}° ${String(minutes).padStart(2,'0')}′ ${String(seconds).padStart(2,'0')}″`;
+ }
  function render(){
   document.documentElement.lang=lang;
   document.querySelectorAll('[data-i18n]').forEach(el=>{if(translations[lang][el.dataset.i18n] && !['sampleCaption','sampleData','privacy','footer','placeHelp','houseNote','prepareChart'].includes(el.dataset.i18n))el.textContent=t(el.dataset.i18n)});
@@ -22,7 +32,7 @@
   document.getElementById('detail-sign').textContent=sign((asc+selected-1)%12);
   document.getElementById('detail-planets').textContent=planetsAt(selected).map(p=>lang==='hi'?hiNames[p.name]:p.name).join(', ')||'—';
   const tbody=document.getElementById('planet-table');tbody.replaceChildren();
-  if(result)chartData().planets.forEach(p=>{const tr=document.createElement('tr');[lang==='hi'?hiNames[p.name]:p.name,sign(p.sign_index),`${p.degree==null?'—':p.degree.toFixed(3)+'°'}${p.retrograde?' ℞':''}`,`${p.nakshatra} (${p.pada})`].forEach(value=>{const td=document.createElement('td');td.textContent=value;tr.append(td)});tbody.append(tr)});
+  if(result)chartData().planets.forEach(p=>{const tr=document.createElement('tr');[lang==='hi'?hiNames[p.name]:p.name,sign(p.sign_index),`${p.degree==null?'—':formatDMS(p.degree)}${p.retrograde?' ℞':''}`,`${p.nakshatra} (${p.pada})`].forEach(value=>{const td=document.createElement('td');td.textContent=value;tr.append(td)});tbody.append(tr)});
   else {const tr=document.createElement('tr'),td=document.createElement('td');td.colSpan=4;td.textContent='Enter birth details to calculate planetary positions.';tr.append(td);tbody.append(tr)}
  }
  document.querySelectorAll('.varga-tab').forEach(b=>b.addEventListener('click',()=>{activeVarga=b.dataset.varga;selected=1;render()}));
