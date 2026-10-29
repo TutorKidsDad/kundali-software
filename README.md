@@ -1,35 +1,30 @@
-# Kundli Explorer
+# Kundli Explorer — Phase 5
 
-A browser-only, bilingual (Hindi/English) North Indian Vedic Kundli interface prototype intended for GitHub Pages.
+Extends Phase 4 (Swiss Ephemeris, D1 and workbook-derived Varga charts, Vimshottari Dasha) with **real computed, transparent preliminary D1 analysis**:
 
-## Important status
-This first version is a **UI prototype, not a working astronomical calculator**. The displayed planetary placements are illustrative sample data. Birth details only update the preview caption; they do not change the sample chart. Do not use this version for actual astrological analysis.
+- Classical whole-sign Graha Drishti for the seven visible Grahas (7th for all; Mars 4th/8th, Jupiter 5th/9th, Saturn 3rd/10th). Rahu/Ketu are excluded because schools differ.
+- Selected basic sign/house yoga checks: own-sign, exaltation-sign, Pancha Mahapurusha, Gaja Kesari.
+- Ashtakavarga and Shadbala are explicitly **not implemented**; do not treat the placeholders as computed results.
 
-## Run locally
-From this folder, run:
+## Run
 
 ```bash
-python3 -m http.server 8000
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install -r requirements.txt
+python -m uvicorn backend:app --host 127.0.0.1 --port 8000 --reload
 ```
 
-Then open http://localhost:8000 in your browser.
+Open http://127.0.0.1:8000 and calculate a Kundli. The analysis appears below the Dasha panel. Health check: http://127.0.0.1:8000/api/health.
 
-## Publish on GitHub Pages
-1. Create a repository such as `kundli-software`.
-2. Upload the contents of this folder to the repository root (so `index.html` is at the root).
-3. Open **Settings → Pages**.
-4. Choose **Deploy from a branch**, select `main` and `/(root)`, then save.
-5. Open the URL shown by GitHub Pages.
+## Limitations
 
-## Planned calculation implementation
-1. Select a browser-compatible astronomical engine and review its licence before bundling it.
-2. Define calculation settings: sidereal zodiac, Lahiri ayanamsha, mean/true node, location coordinates and historical time zone.
-3. Implement and test planetary longitude, ascendant, sign, nakshatra and pada.
-4. Add D1 and D9; then dignity, aspects, yogas and Vimshottari dasha.
-5. Compare known birth cases against a trusted reference program and record tolerances.
+Preliminary rules are not comprehensive predictive yogas. Strength, combustion, cancellation, aspects with orbs, and multiple traditions are not modeled. Validate against reference charts before use in professional reports. Existing workbook-derived divisional mappings are carried forward without new independent validation. Review Swiss Ephemeris licensing before deployment.
 
-## Privacy
-The prototype does not transmit entered birth details. If a geocoding service is added later, its privacy implications and data handling must be documented. Do not commit real users' birth details to the repository.
 
-## Licence
-Add a project licence after deciding how you want the source and any bundled calculation libraries to be distributed. A calculation engine may have a separate licence from this interface.
+## Phase 6 additions
+- Classical unadjusted seven-graha BAV and SAV, total 337 bindus, with seven tables and a sign-by-sign SAV grid.
+- Repositioned the twelve house labels to separate hotspots inside North Indian chart sectors; compact overflow handling.
+- Fixed dasha UTC timestamp parsing (API timestamps lacked `Z`, so browsers incorrectly parsed them as local time), and preserved dropdown selection when re-rendering.
+- Ashtakavarga source rule lists: https://vedicreader.com/j/learn/shadbala-ashtakavarga and https://mokshology.com/learn/ashtakavarga . Verify against a trusted reference chart before production use.
+- Restart the backend and hard-refresh browser (Ctrl+Shift+R) to avoid cached JavaScript/CSS.

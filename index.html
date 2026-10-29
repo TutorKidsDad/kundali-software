@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#7c2d12">
   <title>Kundli Explorer — Vedic Birth Chart</title>
   <link rel="stylesheet" href="css/style.css">
-</head>
+<style>.varga-tabs{max-width:100%;overflow-x:auto;flex-wrap:nowrap!important;justify-content:flex-start}.varga-tab{white-space:nowrap;flex-shrink:0}</style></head>
 <body>
   <header class="topbar">
     <a class="brand" href="./" aria-label="Kundli Explorer home">
@@ -27,14 +27,14 @@
       <div>
         <p class="eyebrow" data-i18n="eyebrow">YOUR PERSONAL JYOTISH WORKSPACE</p>
         <h1 data-i18n="title">Explore your Kundli</h1>
-        <p class="hero-copy" data-i18n="intro">Enter birth details to prepare a Vedic chart. This first release is an interactive interface prototype; planetary positions are sample data until the astronomy engine is integrated and verified.</p>
+        <p class="hero-copy" data-i18n="intro">Enter birth details to prepare a Vedic chart. Calculate sidereal planetary positions and explore D1–D60 divisional charts.</p>
       </div>
       <div class="hero-symbol" aria-hidden="true">✦</div>
     </section>
 
     <div class="notice" role="note">
       <strong data-i18n="prototypeLabel">Prototype notice</strong>
-      <span data-i18n="prototypeText">The chart below uses illustrative sample placements. It does not yet calculate a real horoscope.</span>
+      <span data-i18n="prototypeText">Calculated D1–D60 divisional charts use sidereal longitudes from the Python engine. Verify results before professional use.</span>
     </div>
 
     <section class="workspace">
@@ -63,7 +63,8 @@
 
           <label for="birth-place" data-i18n="place">Birthplace</label>
           <input id="birth-place" name="place" placeholder="City, region, country" required>
-          <p class="field-help" data-i18n="placeHelp">For accurate calculations, the next version will resolve coordinates and historical time zone.</p>
+          <p class="field-help">Enter the birthplace coordinates and IANA timezone below. City name is for display only.</p>
+<div class="field-grid"><div><label for="latitude">Latitude (N +)</label><input id="latitude" type="number" step="any" min="-89.99" max="89.99" value="23.2599" required></div><div><label for="longitude">Longitude (E +)</label><input id="longitude" type="number" step="any" min="-180" max="180" value="77.4126" required></div></div><label for="timezone">IANA time zone</label><input id="timezone" value="Asia/Kolkata" required><p class="field-help">Default coordinates are Bhopal; change them to match the actual birthplace.</p>
 
           <div class="field-grid">
             <div>
@@ -86,7 +87,7 @@
           </button>
           <p class="form-status" id="form-status" aria-live="polite"></p>
         </form>
-        <div class="privacy-note"><span aria-hidden="true">🔒</span><span data-i18n="privacy">This prototype keeps entered details in this page only. Nothing is uploaded to a server.</span></div>
+        <div class="privacy-note"><span aria-hidden="true">🔒</span><span data-i18n="privacy">Birth details are sent to your configured Python API for calculation; this app does not save profiles.</span></div>
       </aside>
 
       <section class="panel chart-panel">
@@ -94,9 +95,25 @@
           <div>
             <p class="eyebrow" data-i18n="step2">STEP 02</p>
             <h2 data-i18n="lagnaChart">Lagna Kundli · D1</h2>
-            <p class="subheading" id="chart-caption" data-i18n="sampleCaption">Illustrative sample chart · select a house</p>
+            <p class="subheading" id="chart-caption" data-i18n="sampleCaption">Enter birth details to calculate a chart</p>
           </div>
-          <span class="chart-tag">D1</span>
+          <div class="varga-tabs" role="group" aria-label="Divisional chart selector">
+            <button type="button" class="varga-tab active" data-varga="D1" aria-pressed="true">D1 · Rashi</button>
+            <button type="button" class="varga-tab " data-varga="D2" aria-pressed="false">D2 · Hora</button>
+            <button type="button" class="varga-tab " data-varga="D3" aria-pressed="false">D3 · Drekkana</button>
+            <button type="button" class="varga-tab " data-varga="D4" aria-pressed="false">D4 · Chaturthamsha</button>
+            <button type="button" class="varga-tab " data-varga="D7" aria-pressed="false">D7 · Saptamsha</button>
+            <button type="button" class="varga-tab " data-varga="D9" aria-pressed="false">D9 · Navamsha</button>
+            <button type="button" class="varga-tab " data-varga="D10" aria-pressed="false">D10 · Dashamsha</button>
+            <button type="button" class="varga-tab " data-varga="D12" aria-pressed="false">D12 · Dwadashamsha</button>
+            <button type="button" class="varga-tab " data-varga="D16" aria-pressed="false">D16 · Shodashamsha</button>
+            <button type="button" class="varga-tab " data-varga="D20" aria-pressed="false">D20 · Vimshamsha</button>
+            <button type="button" class="varga-tab " data-varga="D24" aria-pressed="false">D24 · Chaturvimshamsha</button>
+            <button type="button" class="varga-tab " data-varga="D30" aria-pressed="false">D30 · Trimsamsha</button>
+            <button type="button" class="varga-tab " data-varga="D40" aria-pressed="false">D40 · Khavedamsha</button>
+            <button type="button" class="varga-tab " data-varga="D45" aria-pressed="false">D45 · Akshavedamsha</button>
+            <button type="button" class="varga-tab " data-varga="D60" aria-pressed="false">D60 · Shashtiamsha</button>
+          </div>
         </div>
 
         <div class="chart-layout">
@@ -125,16 +142,16 @@
             <h3 id="detail-title">House 1</h3>
             <p class="detail-sign" id="detail-sign">Aries · Mesha</p>
             <div class="detail-rule"></div>
-            <p class="detail-label" data-i18n="samplePlanets">Sample placements</p>
+            <p class="detail-label" data-i18n="samplePlanets">Planetary placements</p>
             <p id="detail-planets" class="detail-planets">Ascendant, Mars</p>
-            <p class="detail-note" data-i18n="houseNote">House meanings and calculated placements will be added after the chart engine is integrated.</p>
+            <p class="detail-note" data-i18n="houseNote">Select a house to inspect its calculated placements.</p>
           </aside>
         </div>
 
         <div class="planet-summary">
           <div class="summary-heading">
             <div><p class="eyebrow" data-i18n="referenceData">REFERENCE DATA</p><h3 data-i18n="planetaryTable">Planetary positions</h3></div>
-            <span class="sample-pill" data-i18n="sampleData">SAMPLE DATA</span>
+            <span class="sample-pill" data-i18n="sampleData">CALCULATED DATA</span>
           </div>
           <div class="table-wrap">
             <table>
@@ -152,8 +169,32 @@
       </section>
     </section>
 
+
+<section class="ashta-panel panel" id="ashta-panel" aria-label="Ashtakavarga calculations">
+ <p class="eyebrow">PHASE 6 / अष्टकवर्ग</p><h2>Ashtakavarga / अष्टकवर्ग</h2>
+ <p id="ashta-summary">Calculate a Kundli to view seven Bhinna Ashtakavarga tables and Sarvashtakavarga.</p>
+ <h3>Sarvashtakavarga (SAV) · सर्वाष्टकवर्ग</h3><div id="sav-grid" class="ashta-grid"></div>
+ <h3>Bhinna Ashtakavarga (BAV) · भिन्नाष्टकवर्ग</h3>
+ <div class="table-wrap"><table><thead id="bav-head"></thead><tbody id="bav-body"></tbody></table></div>
+ <p>Raw seven-graha bindus (337 total), including Lagna as a contributor. No Trikona or Ekadhipatya reductions. Signs run Aries to Pisces.</p>
+</section>
+<section class="dasha-panel panel" id="dasha-panel" aria-label="Vimshottari Dasha">
+  <div class="dasha-header"><div><p class="eyebrow">DASHA CALCULATIONS / दशा गणना</p><h2>Vimshottari Dasha / विंशोत्तरी दशा</h2><p id="dasha-summary">Calculate a Kundli to see Mahadasha, Antardasha and Pratyantardasha periods.</p></div><div class="dasha-note">365.25 days / dasha year · dates in birth time zone</div></div>
+  <div class="dasha-controls"><label for="mahadasha-select">Mahadasha / महादशा</label><select id="mahadasha-select" disabled><option>Calculate first</option></select><label for="antardasha-select">Antardasha / अंतर्दशा</label><select id="antardasha-select" disabled><option>Calculate first</option></select></div>
+  <div id="dasha-current" class="dasha-current" aria-live="polite"></div>
+  <div class="dasha-tables"><div><h3>Mahadasha timeline</h3><div class="table-wrap"><table><thead><tr><th>Lord</th><th>Start</th><th>End</th></tr></thead><tbody id="mahadasha-body"></tbody></table></div></div><div><h3>Antardasha timeline</h3><div class="table-wrap"><table><thead><tr><th>Lord</th><th>Start</th><th>End</th></tr></thead><tbody id="antardasha-body"></tbody></table></div></div><div><h3>Pratyantardasha timeline</h3><div class="table-wrap"><table><thead><tr><th>Lord</th><th>Start</th><th>End</th></tr></thead><tbody id="pratyantardasha-body"></tbody></table></div></div></div>
+  <p class="dasha-footnote">Periods use the Moon's sidereal birth Nakshatra and a fixed 365.25-day year. Boundaries and dates may differ from astrology programs using other year conventions. No predictive interpretation is implied.</p>
+</section>
+<section class="panel analysis-panel" id="jyotish-analysis" aria-label="Jyotish analysis">
+ <div class="dasha-header"><div><p class="eyebrow">PHASE 5 / ज्योतिष विश्लेषण</p><h2>Graha Drishti &amp; Yoga Checks / ग्रह दृष्टि एवं योग</h2><p>Rule-based D1 analysis. Calculate a Kundli to populate results.</p></div></div>
+ <div class="analysis-grid">
+  <div><h3>Graha Drishti / ग्रह दृष्टि</h3><div class="table-wrap"><table><thead><tr><th>Graha</th><th>Aspect</th><th>Target Rashi</th><th>House</th><th>Occupants</th></tr></thead><tbody id="aspect-body"><tr><td colspan="5">Calculate first</td></tr></tbody></table></div></div>
+  <div><h3>Detected Yoga rules / योग नियम</h3><div id="yoga-results" class="yoga-results">Calculate first</div><p class="analysis-disclaimer">Preliminary sign/house tests only; no predictive claims, cancellations or strength checks.</p></div>
+ </div>
+ <div class="analysis-grid pending-panels"><div><h3>Ashtakavarga / अष्टकवर्ग</h3><p>Not yet implemented: contributor rules need independent verification. No estimated bindus are shown.</p></div><div><h3>Shadbala / षड्बल</h3><p>Not yet implemented: all six strength components require independent validation. No estimated scores are shown.</p></div></div>
+</section>
     <section class="next-steps">
-      <div><p class="eyebrow" data-i18n="comingNext">COMING NEXT</p><h2 data-i18n="buildAccurate">From chart preview to a calculated Kundli</h2></div>
+      <div><p class="eyebrow" data-i18n="comingNext">COMING NEXT</p><h2 data-i18n="buildAccurate">Explore your divisional charts</h2></div>
       <div class="feature-list">
         <span>01 <b data-i18n="ephemeris">Verified planetary ephemeris</b></span>
         <span>02 <b data-i18n="navamsa">Navamsha D9</b></span>
@@ -161,7 +202,7 @@
         <span>04 <b data-i18n="yogas">Yoga rules and report</b></span>
       </div>
     </section>
-    <footer><span>© Kundli Explorer</span><span data-i18n="footer">Open-source project · Calculation engine not yet enabled</span></footer>
+    <footer><span>© Kundli Explorer</span><span data-i18n="footer">Phase 1 · Swiss Ephemeris calculation enabled</span></footer>
   </main>
   <script src="js/translations.js"></script>
   <script src="js/app.js"></script>
