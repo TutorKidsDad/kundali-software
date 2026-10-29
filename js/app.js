@@ -1,4 +1,5 @@
 (() => {
+ const API_BASE=(window.KUNDLI_API_BASE||'https://kundali-software-ej6w.onrender.com').replace(/\/+$/, '');
  const translations=window.KUNDLI_TRANSLATIONS;
  const signsEn=translations.en.signs, signsHi=translations.hi.signs;
  const short={Ascendant:'Asc',Sun:'Su',Moon:'Mo',Mars:'Ma',Mercury:'Me',Jupiter:'Ju',Venus:'Ve',Saturn:'Sa',Rahu:'Ra',Ketu:'Ke'};
@@ -31,9 +32,9 @@
   e.preventDefault();const status=document.getElementById('form-status');status.textContent='Calculating…';
   const get=id=>document.getElementById(id).value;
   const body={name:get('person-name'),date:get('birth-date'),time:get('birth-time'),place:get('birth-place'),latitude:Number(get('latitude')),longitude:Number(get('longitude')),timezone:get('timezone'),ayanamsha:get('ayanamsha'),nodes:get('nodes')};
-  try {const endpoint=window.KUNDLI_API_BASE||'';const response=await fetch(`${endpoint}/api/chart`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});const data=await response.json();if(!response.ok)throw Error(typeof data.detail==='string'?data.detail:'Calculation failed');result=data;selected=1;document.getElementById('chart-caption').textContent=`${body.name||'Birth chart'} · ${body.place} · ${body.date} ${body.time} · ${data.ascendant_sign} Lagna`;
+  try {const response=await fetch(`${API_BASE}/api/chart`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});let data;try{data=await response.json()}catch{data={}}if(!response.ok)throw Error(typeof data.detail==='string'?data.detail:`API request failed (HTTP ${response.status})`);result=data;selected=1;document.getElementById('chart-caption').textContent=`${body.name||'Birth chart'} · ${body.place} · ${body.date} ${body.time} · ${data.ascendant_sign} Lagna`;
    status.textContent=`Calculated successfully · ${data.ayanamsha} · ${data.house_system}`;render();renderDasha();renderAnalysis();renderAshta();
-  }catch(err){status.textContent=`Error: ${err.message}. Check API server and birth details.`}
+  }catch(err){const message=err instanceof TypeError?'Could not reach the Kundli API. Check your internet connection, Render deployment status, and backend CORS settings.':err.message;status.textContent=`Error: ${message}`;}
  });
  const mdSelect=document.getElementById('mahadasha-select'),adSelect=document.getElementById('antardasha-select');
  const fmt=iso=>{if(!iso)return '—';const date=new Date(/(?:Z|[+-]\d\d:\d\d)$/.test(iso)?iso:iso+'Z');return new Intl.DateTimeFormat(lang==='hi'?'hi-IN':'en-GB',{timeZone:result?.local_time?getZone(): 'UTC',year:'numeric',month:'short',day:'2-digit'}).format(date)};
