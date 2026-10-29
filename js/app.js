@@ -38,6 +38,47 @@
  document.querySelectorAll('.varga-tab').forEach(b=>b.addEventListener('click',()=>{activeVarga=b.dataset.varga;selected=1;render()}));
  buttons.forEach(b=>b.addEventListener('click',()=>{selected=+b.dataset.house;render()}));
  document.getElementById('language').addEventListener('change',e=>{lang=e.target.value;render();if(result)renderDasha(false)});
+ 
+ // Geocoding is triggered by the user, not on every keystroke.
+ // Open-Meteo returns coordinates and an IANA timezone; no backend change needed.
+ const lookupButton=document.getElementById('lookup-city');
+ const lookupStatus=document.getElementById('lookup-status');
+ const lookupResults=document.getElementById('lookup-results');
+ async function lookupCity(){
+  const city=document.getElementById('birth-place').value.trim();
+  lookupResults.replaceChildren();
+  if(city.length<2){lookupStatus.textContent='Enter a city name first.';return}
+  lookupButton.disabled=true;lookupStatus.textContent='Searching cities…';
+  try{
+   const url='https://geocoding-api.open-meteo.com/v1/search?name='+encodeURIComponent(city)+'&count=10&language=en&format=json';
+   const response=await fetch(url);
+   if(!response.ok)throw new Error('Geocoding service returned HTTP '+response.status);
+   const data=await response.json();
+   const matches=(data.results||[]).filter(p=>Number.isFinite(p.latitude)&&Number.isFinite(p.longitude));
+   if(!matches.length){lookupStatus.textContent='No matching city found. Try a different spelling or a nearby major city.';return}
+   lookupStatus.textContent='Select the correct birthplace:';
+   matches.forEach(p=>{
+    const label=[p.name,p.admin1,p.country].filter(Boolean).join(', ');
+    const button=document.createElement('button');
+    button.type='button';button.textContent=label;
+    button.style.cssText='display:block;width:100%;text-align:left;padding:8px;margin:4px 0;cursor:pointer';
+    button.addEventListener('click',()=>{
+     document.getElementById('birth-place').value=label;
+     document.getElementById('latitude').value=p.latitude;
+     document.getElementById('longitude').value=p.longitude;
+     if(p.timezone)document.getElementById('timezone').value=p.timezone;
+     lookupResults.replaceChildren();
+     lookupStatus.textContent='Coordinates and timezone filled for '+label+'. Please verify before calculating.';
+    });
+    lookupResults.append(button);
+   });
+  }catch(error){lookupStatus.textContent='City lookup failed. Check your connection or enter coordinates manually.'}
+  finally{lookupButton.disabled=false}
+ }
+ lookupButton.addEventListener('click',lookupCity);
+ document.getElementById('birth-place').addEventListener('keydown',e=>{
+  if(e.key==='Enter'){e.preventDefault();lookupCity()}
+ });
  document.getElementById('birth-form').addEventListener('submit',async e=>{
   e.preventDefault();const status=document.getElementById('form-status');status.textContent='Calculating…';
   const get=id=>document.getElementById(id).value;

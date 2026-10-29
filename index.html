@@ -63,8 +63,13 @@
 
           <label for="birth-place" data-i18n="place">Birthplace</label>
           <input id="birth-place" name="place" placeholder="City, region, country" required>
-          <p class="field-help">Enter the birthplace coordinates and IANA timezone below. City name is for display only.</p>
-<div class="field-grid"><div><label for="latitude">Latitude (N +)</label><input id="latitude" type="number" step="any" min="-89.99" max="89.99" value="23.2599" required></div><div><label for="longitude">Longitude (E +)</label><input id="longitude" type="number" step="any" min="-180" max="180" value="77.4126" required></div></div><label for="timezone">IANA time zone</label><input id="timezone" value="Asia/Kolkata" required><p class="field-help">Default coordinates are Bhopal; change them to match the actual birthplace.</p>
+          <div class="place-lookup" style="margin:8px 0 12px">
+  <button type="button" id="lookup-city" style="padding:9px 14px;cursor:pointer">Find city coordinates</button>
+  <span id="lookup-status" role="status" aria-live="polite" style="margin-left:8px;font-size:.85rem"></span>
+  <div id="lookup-results" style="margin-top:8px"></div>
+</div>
+<p class="field-help">Search for your birthplace and select the correct location. Latitude, longitude and IANA timezone will be filled automatically; all fields remain editable. Verify historical timezone rules for older births.</p>
+<div class="field-grid"><div><label for="latitude">Latitude (N +)</label><input id="latitude" type="number" step="any" min="-89.99" max="89.99" value="23.2599" required></div><div><label for="longitude">Longitude (E +)</label><input id="longitude" type="number" step="any" min="-180" max="180" value="77.4126" required></div></div><label for="timezone">IANA time zone</label><input id="timezone" value="Asia/Kolkata" required><p class="field-help">Default coordinates are Bhopal until you select another city.</p>
 
           <div class="field-grid">
             <div>
@@ -191,7 +196,7 @@
   <div><h3>Graha Drishti / ग्रह दृष्टि</h3><div class="table-wrap"><table><thead><tr><th>Graha</th><th>Aspect</th><th>Target Rashi</th><th>House</th><th>Occupants</th></tr></thead><tbody id="aspect-body"><tr><td colspan="5">Calculate first</td></tr></tbody></table></div></div>
   <div><h3>Detected Yoga rules / योग नियम</h3><div id="yoga-results" class="yoga-results">Calculate first</div><p class="analysis-disclaimer">Preliminary sign/house tests only; no predictive claims, cancellations or strength checks.</p></div>
  </div>
- <div class="analysis-grid pending-panels"><div><h3>Shadbala / षड्बल</h3><p>Not yet implemented: all six strength components require independent validation. No estimated scores are shown.</p></div></div>
+ <div class="analysis-grid pending-panels"><div><h3>Ashtakavarga / अष्टकवर्ग</h3><p>Not yet implemented: contributor rules need independent verification. No estimated bindus are shown.</p></div><div><h3>Shadbala / षड्बल</h3><p>Not yet implemented: all six strength components require independent validation. No estimated scores are shown.</p></div></div>
 </section>
     <section class="next-steps">
       <div><p class="eyebrow" data-i18n="comingNext">COMING NEXT</p><h2 data-i18n="buildAccurate">Explore your divisional charts</h2></div>
@@ -205,6 +210,6 @@
     <footer><span>© Kundli Explorer</span><span data-i18n="footer">Phase 1 · Swiss Ephemeris calculation enabled</span></footer>
   </main>
   <script src="js/translations.js"></script>
-  <script src="js/app.js"></script>
+  <script src="js/app.js?v=city-lookup-1"></script>
 </body>
 </html>
