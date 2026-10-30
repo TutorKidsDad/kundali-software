@@ -4,7 +4,10 @@ EXALT={'Sun':10.,'Moon':33.,'Mars':298.,'Mercury':165.,'Jupiter':95.,'Venus':357
 BEST_HOUSE={'Sun':10,'Mars':10,'Moon':4,'Venus':4,'Mercury':1,'Jupiter':1,'Saturn':7}
 COMPONENTS=('sthana_bala','dig_bala','kala_bala','cheshta_bala','naisargika_bala','drik_bala')
 def shortest(a,b): return abs((a-b+180)%360-180)
-def shadbala(planets):
+OWN_SIGNS={'Sun':{4},'Moon':{3},'Mars':{0,7},'Mercury':{2,5},'Jupiter':{8,11},'Venus':{1,6},'Saturn':{9,10}}
+SAPTAVARGA=(1,2,3,7,9,12,30)
+def shadbala(planets, varga_sign_fn=None):
+
     lookup={p['name']:p for p in planets}
     asc=lookup['Ascendant']['longitude']
     rows=[]
@@ -39,6 +42,15 @@ def shadbala(planets):
         illuminated_phase=(180-abs(elongation-180))/3
         waxing_benefic={'Moon','Mercury','Jupiter','Venus'}
         paksha=illuminated_phase if name in waxing_benefic else 60-illuminated_phase
+        # Saptavargaja *placement diagnostics* only. The final Bala requires
+        # compound planetary friendships, exaltation/own/moolatrikona
+        # classifications, and a chosen authoritative point schedule.
+        varga_placements={}
+        if varga_sign_fn is not None:
+            for division in SAPTAVARGA:
+                mapped=int(longitude//30) if division==1 else varga_sign_fn(longitude,division)
+                varga_placements[f'D{division}']={'sign_index':mapped,
+                    'sign_number':mapped+1,'own_sign':mapped in OWN_SIGNS[name]}
         components={key:None for key in COMPONENTS}
         components['dig_bala']=round(dig,4)
         components['naisargika_bala']=round(natural,4)
@@ -46,8 +58,9 @@ def shadbala(planets):
                      'sthana_subcomponents':{'uchcha_bala':round(uchcha,4),'ojhayugma_bala':ojha,'kendradi_bala_whole_sign':kendradi,'drekkana_bala':drekkana},
                      'kala_subcomponents':{'paksha_bala':round(paksha,4)},
                      'calculated_partial_virupas':round(dig+natural+uchcha+kendradi+(ojha or 0)+drekkana+paksha,4),
+                     'saptavargaja_diagnostics':{'placements':varga_placements,'own_sign_count':sum(v['own_sign'] for v in varga_placements.values()),'bala_virupas':None,'status':'placements_only_not_scored'},
                      'motion_diagnostics':{'longitude_speed_deg_per_day':lookup[name].get('longitude_speed_deg_per_day'), 'retrograde':lookup[name].get('retrograde')},
                      'total_virupas':None,'total_rupas':None,'meets_minimum':None})
     return {'status':'partial_not_validated','unit':'virupa',
-            'note':'Incremental diagnostic only: Drekkana Bala and Paksha Bala added. Saptavargaja, remaining Kala terms, Cheshta and Drik are NOT implemented. Dig and Kendradi use whole-sign approximations. Mercury/Saturn Ojhayugma remains unresolved. Paksha classification follows a stated convention (Mercury treated as benefic). Partial subtotal is NOT full Shadbala and MUST NOT be used for strength verdicts.',
+            'note':'Incremental diagnostic only: Saptavargaja D1/D2/D3/D7/D9/D12/D30 placements and own-sign indicators added; Saptavargaja Bala points are NOT calculated. Saptavargaja, remaining Kala terms, Cheshta and Drik are NOT implemented. Dig and Kendradi use whole-sign approximations. Mercury/Saturn Ojhayugma remains unresolved. Paksha classification follows a stated convention (Mercury treated as benefic). Partial subtotal is NOT full Shadbala and MUST NOT be used for strength verdicts.',
             'planets':rows}

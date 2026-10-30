@@ -185,7 +185,7 @@ def chart(b: Birth):
                 'nodes':b.nodes,'house_system':'Whole sign (Rashi)','ephemeris':'Swiss Ephemeris Moshier',
                 'ascendant_sign':SIGNS[lagna_sign], 'planets':planets,
                 'analysis':analyze(planets),
-                'shadbala':shadbala(planets),
+                'shadbala':shadbala(planets,varga_sign),
                 'ashtakavarga':ashtakavarga(planets),
                 'vimshottari':vimshottari(next(p['longitude'] for p in planets if p['name']=='Moon'),utc),
                 'vargas': {f'D{d}':build_varga(planets,d) for d in DIVISIONS}, 'available_vargas':[f'D{d}' for d in DIVISIONS]}
