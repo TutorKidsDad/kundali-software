@@ -141,7 +141,7 @@ def details(name, longitude, speed, lagna_sign):
     pada = min(4,int((longitude % (360/27)) / (360/108)) + 1)
     return dict(name=name, longitude=round(longitude,7), sign=SIGNS[sign_index], sign_index=sign_index,
                 degree=round(longitude%30,5), house=(sign_index-lagna_sign)%12+1,
-                nakshatra=NAK[nak_index], pada=pada, retrograde=speed < 0)
+                nakshatra=NAK[nak_index], pada=pada, retrograde=speed < 0, longitude_speed_deg_per_day=round(speed,8))
 
 @app.get('/api/health')
 def health(): return {'ok':True, 'ephemeris':swe.version}
@@ -194,7 +194,6 @@ def chart(b: Birth):
     except Exception as exc:
         raise HTTPException(status_code=500,detail=f'Calculation failed: {exc}')
 
-app.mount('/', StaticFiles(directory=str(Path(__file__).resolve().parent),html=True),name='frontend')
 
 
 @app.post('/api/report/pdf')
@@ -202,3 +201,6 @@ def report_pdf(b: Birth):
     data = chart(b)
     content = build_report(data)
     return Response(content=content,media_type='application/pdf',headers={'Content-Disposition':'attachment; filename="kundli-complete.pdf"'})
+
+# Catch-all frontend mount must be registered AFTER every /api route.
+app.mount('/', StaticFiles(directory=str(Path(__file__).resolve().parent),html=True),name='frontend')

@@ -19,7 +19,8 @@ def shadbala(planets):
         rows.append({'name':name,'components':components,
                      'sthana_subcomponents':{'uchcha_bala':round(uchcha,4)},
                      'calculated_partial_virupas':round(dig+natural+uchcha,4),
+                     'motion_diagnostics':{'longitude_speed_deg_per_day':lookup[name].get('longitude_speed_deg_per_day'), 'retrograde':lookup[name].get('retrograde')},
                      'total_virupas':None,'total_rupas':None,'meets_minimum':None})
     return {'status':'partial_not_validated','unit':'virupa',
-            'note':'Dig Bala and Naisargika Bala are calculated; Uchcha Bala is only one part of Sthana Bala. Kala, Cheshta, Drik and remaining Sthana subcomponents are pending. Partial subtotal is NOT a Shadbala total. Dig uses whole-sign angular offsets from Lagna, not measured quadrant cusps.',
+            'note':'Dig Bala and Naisargika Bala are calculated; Uchcha Bala is only one part of Sthana Bala. Kala, Cheshta, Drik and remaining Sthana subcomponents are pending. Partial subtotal is NOT a Shadbala total. Dig uses whole-sign angular offsets from Lagna, not measured quadrant cusps. Motion speeds are exposed as diagnostics for later Cheshta Bala validation, not counted as Cheshta strength.',
             'planets':rows}
