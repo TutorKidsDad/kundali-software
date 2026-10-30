@@ -114,7 +114,7 @@
   document.getElementById('shadbala-status').textContent=sh.note;
   const body=document.getElementById('shadbala-body');body.replaceChildren();
   sh.planets.forEach(p=>{const tr=document.createElement('tr');
-   [lang==='hi'?hiNames[p.name]:p.name,p.sthana_subcomponents?.uchcha_bala ?? '—',p.components.dig_bala ?? '—',p.components.naisargika_bala,p.calculated_partial_virupas ?? '—','Pending validation'].forEach(v=>{const td=document.createElement('td');td.textContent=v;tr.append(td)});body.append(tr)});
+   [lang==='hi'?hiNames[p.name]:p.name,p.sthana_subcomponents?.uchcha_bala ?? '—',p.sthana_subcomponents?.ojhayugma_bala ?? '—',p.sthana_subcomponents?.kendradi_bala_whole_sign ?? '—',p.components.dig_bala ?? '—',p.components.naisargika_bala,p.calculated_partial_virupas ?? '—','Pending validation'].forEach(v=>{const td=document.createElement('td');td.textContent=v;tr.append(td)});body.append(tr)});
  }
  const saveBlob=(blob,filename)=>{const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=filename;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000)};
  const safeName=()=>((lastBirth?.name||'kundli').trim().replace(/[^a-z0-9_-]+/gi,'_').slice(0,45)||'kundli');

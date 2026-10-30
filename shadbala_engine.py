@@ -13,14 +13,28 @@ def shadbala(planets):
         uchcha=(180-shortest(longitude,EXALT[name]))/3
         best=(asc+30*(BEST_HOUSE[name]-1))%360
         dig=(180-shortest(longitude,best))/3
+        # Ojhayugma: odd signs and odd navamshas for Sun/Mars/Jupiter;
+        # even signs and even navamshas for Moon/Venus. Mercury and Saturn
+        # have variant traditions, so do not assign their Ojhayugma score.
+        sign=int(longitude//30)
+        navamsha=int((longitude%30)//(30/9))
+        nav_sign=(sign*9+navamsha)%12
+        preference={'Sun':0,'Mars':0,'Jupiter':0,'Moon':1,'Venus':1}
+        ojha=None
+        if name in preference:
+            target=preference[name]
+            ojha=15*(int(sign%2==target)+int(nav_sign%2==target))
+        # Kendradi (whole-sign house approximation; not quadrant bhava).
+        house=int(lookup[name]['house'])
+        kendradi=60 if house in (1,4,7,10) else 30 if house in (2,5,8,11) else 15
         components={key:None for key in COMPONENTS}
         components['dig_bala']=round(dig,4)
         components['naisargika_bala']=round(natural,4)
         rows.append({'name':name,'components':components,
-                     'sthana_subcomponents':{'uchcha_bala':round(uchcha,4)},
-                     'calculated_partial_virupas':round(dig+natural+uchcha,4),
+                     'sthana_subcomponents':{'uchcha_bala':round(uchcha,4),'ojhayugma_bala':ojha,'kendradi_bala_whole_sign':kendradi},
+                     'calculated_partial_virupas':round(dig+natural+uchcha+kendradi+(ojha or 0),4),
                      'motion_diagnostics':{'longitude_speed_deg_per_day':lookup[name].get('longitude_speed_deg_per_day'), 'retrograde':lookup[name].get('retrograde')},
                      'total_virupas':None,'total_rupas':None,'meets_minimum':None})
     return {'status':'partial_not_validated','unit':'virupa',
-            'note':'Dig Bala and Naisargika Bala are calculated; Uchcha Bala is only one part of Sthana Bala. Kala, Cheshta, Drik and remaining Sthana subcomponents are pending. Partial subtotal is NOT a Shadbala total. Dig uses whole-sign angular offsets from Lagna, not measured quadrant cusps. Motion speeds are exposed as diagnostics for later Cheshta Bala validation, not counted as Cheshta strength.',
+            'note':'Dig Bala and Naisargika Bala are calculated; Uchcha, Kendradi (whole-sign approximation), and some Ojhayugma are Sthana subcomponents only. Kala, Cheshta, Drik, remaining Sthana subcomponents, and Ojhayugma for Mercury/Saturn are pending. Partial subtotal is NOT a Shadbala total. Dig uses whole-sign angular offsets from Lagna, not measured quadrant cusps. Motion speeds are exposed as diagnostics for later Cheshta Bala validation, not counted as Cheshta strength.',
             'planets':rows}

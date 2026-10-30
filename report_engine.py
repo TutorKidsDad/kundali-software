@@ -95,8 +95,8 @@ def build_report(data):
     heading('Shadbala - Calculation Status')
     sh=data.get('shadbala',{})
     story.append(para(sh.get('note','Shadbala unavailable.')))
-    table(['Planet','Uchcha*','Dig','Naisargika','Partial*','Full'],[[p['name'],p.get('sthana_subcomponents',{}).get('uchcha_bala','-'),p['components'].get('dig_bala','-'),p['components']['naisargika_bala'],p.get('calculated_partial_virupas','-'),'Pending'] for p in sh.get('planets',[])])
-    story.append(Spacer(1,15));story.append(para('Calculated results are based on the application conventions; Shadbala is partial and must not be interpreted as a completed strength score.'))
+    table(['Planet','Uchcha*','Ojha*','Kendra*','Dig','Natural','Partial*','Full'],[[p['name'],p.get('sthana_subcomponents',{}).get('uchcha_bala','-'),p.get('sthana_subcomponents',{}).get('ojhayugma_bala') if p.get('sthana_subcomponents',{}).get('ojhayugma_bala') is not None else '-',p.get('sthana_subcomponents',{}).get('kendradi_bala_whole_sign','-'),p['components'].get('dig_bala','-'),p['components']['naisargika_bala'],p.get('calculated_partial_virupas','-'),'Pending'] for p in sh.get('planets',[])])
+    story.append(Spacer(1,15));story.append(para('Calculated results are based on the application conventions; Shadbala is partial: Kendradi uses whole-sign houses and Ojhayugma is unavailable for Mercury/Saturn. Partial subtotals are not complete strength scores.'))
     def footer(canvas, document):
         canvas.saveState()
         canvas.setStrokeColor(HexColor('#d7e0eb'))
