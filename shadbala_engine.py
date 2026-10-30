@@ -27,14 +27,27 @@ def shadbala(planets):
         # Kendradi (whole-sign house approximation; not quadrant bhava).
         house=int(lookup[name]['house'])
         kendradi=60 if house in (1,4,7,10) else 30 if house in (2,5,8,11) else 15
+        # Drekkana Bala: masculine planets first decanate, neutral planets
+        # second, feminine planets third; exact 0/15 virupas.
+        decanate=min(2,int((longitude % 30)/10))
+        preferred_decanate={'Sun':0,'Mars':0,'Jupiter':0,
+                            'Mercury':1,'Saturn':1,'Moon':2,'Venus':2}[name]
+        drekkana=15 if decanate==preferred_decanate else 0
+        # Paksha Bala depends on Sun-Moon elongation, not on calendar tithi
+        # rounded to an integer. Waxing benefic and waning malefic convention.
+        elongation=(lookup['Moon']['longitude']-lookup['Sun']['longitude'])%360
+        illuminated_phase=(180-abs(elongation-180))/3
+        waxing_benefic={'Moon','Mercury','Jupiter','Venus'}
+        paksha=illuminated_phase if name in waxing_benefic else 60-illuminated_phase
         components={key:None for key in COMPONENTS}
         components['dig_bala']=round(dig,4)
         components['naisargika_bala']=round(natural,4)
         rows.append({'name':name,'components':components,
-                     'sthana_subcomponents':{'uchcha_bala':round(uchcha,4),'ojhayugma_bala':ojha,'kendradi_bala_whole_sign':kendradi},
-                     'calculated_partial_virupas':round(dig+natural+uchcha+kendradi+(ojha or 0),4),
+                     'sthana_subcomponents':{'uchcha_bala':round(uchcha,4),'ojhayugma_bala':ojha,'kendradi_bala_whole_sign':kendradi,'drekkana_bala':drekkana},
+                     'kala_subcomponents':{'paksha_bala':round(paksha,4)},
+                     'calculated_partial_virupas':round(dig+natural+uchcha+kendradi+(ojha or 0)+drekkana+paksha,4),
                      'motion_diagnostics':{'longitude_speed_deg_per_day':lookup[name].get('longitude_speed_deg_per_day'), 'retrograde':lookup[name].get('retrograde')},
                      'total_virupas':None,'total_rupas':None,'meets_minimum':None})
     return {'status':'partial_not_validated','unit':'virupa',
-            'note':'Dig Bala and Naisargika Bala are calculated; Uchcha, Kendradi (whole-sign approximation), and some Ojhayugma are Sthana subcomponents only. Kala, Cheshta, Drik, remaining Sthana subcomponents, and Ojhayugma for Mercury/Saturn are pending. Partial subtotal is NOT a Shadbala total. Dig uses whole-sign angular offsets from Lagna, not measured quadrant cusps. Motion speeds are exposed as diagnostics for later Cheshta Bala validation, not counted as Cheshta strength.',
+            'note':'Incremental diagnostic only: Drekkana Bala and Paksha Bala added. Saptavargaja, remaining Kala terms, Cheshta and Drik are NOT implemented. Dig and Kendradi use whole-sign approximations. Mercury/Saturn Ojhayugma remains unresolved. Paksha classification follows a stated convention (Mercury treated as benefic). Partial subtotal is NOT full Shadbala and MUST NOT be used for strength verdicts.',
             'planets':rows}
