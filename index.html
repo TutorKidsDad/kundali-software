@@ -196,8 +196,9 @@
   <div><h3>Graha Drishti / ग्रह दृष्टि</h3><div class="table-wrap"><table><thead><tr><th>Graha</th><th>Aspect</th><th>Target Rashi</th><th>House</th><th>Occupants</th></tr></thead><tbody id="aspect-body"><tr><td colspan="5">Calculate first</td></tr></tbody></table></div></div>
   <div><h3>Detected Yoga rules / योग नियम</h3><div id="yoga-results" class="yoga-results">Calculate first</div><p class="analysis-disclaimer">Preliminary sign/house tests only; no predictive claims, cancellations or strength checks.</p></div>
  </div>
- <div class="analysis-grid pending-panels"><div><h3>Ashtakavarga / अष्टकवर्ग</h3><p>Not yet implemented: contributor rules need independent verification. No estimated bindus are shown.</p></div><div><h3>Shadbala / षड्बल</h3><p>Not yet implemented: all six strength components require independent validation. No estimated scores are shown.</p></div></div>
+ <div class="analysis-grid pending-panels"><div><h3>Shadbala / षड्बल (Phase 7)</h3><p id="shadbala-status">Calculate a Kundli to view verified partial components. Full Shadbala totals are not yet available.</p><div class="table-wrap"><table><thead><tr><th>Planet</th><th>Uchcha*</th><th>Dig</th><th>Naisargika</th><th>Partial*</th><th>Full Shadbala</th></tr></thead><tbody id="shadbala-body"></tbody></table></div></div></div>
 </section>
+    <section class="panel" id="download-panel"><p class="eyebrow">PHASE 7 / डाउनलोड</p><h2>Download Complete Kundli / सम्पूर्ण कुंडली डाउनलोड</h2><p>Calculate a Kundli first. PDF includes all available chart data, and JSON contains the full API response.</p><div style="display:flex;gap:12px;flex-wrap:wrap"><button type="button" id="download-pdf" disabled>Download PDF / पीडीएफ</button><button type="button" id="download-json" disabled>Download JSON / डेटा</button></div><p id="download-status" role="status"></p></section>
     <section class="next-steps">
       <div><p class="eyebrow" data-i18n="comingNext">COMING NEXT</p><h2 data-i18n="buildAccurate">Explore your divisional charts</h2></div>
       <div class="feature-list">
@@ -210,6 +211,6 @@
     <footer><span>© Kundli Explorer</span><span data-i18n="footer">Phase 1 · Swiss Ephemeris calculation enabled</span></footer>
   </main>
   <script src="js/translations.js"></script>
-  <script src="js/app.js?v=city-lookup-1"></script>
+  <script src="js/app.js?v=phase7-export-1"></script>
 </body>
 </html>

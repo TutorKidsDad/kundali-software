@@ -1,5 +1,8 @@
 from datetime import datetime, timezone
 from analysis_engine import analyze
+from shadbala_engine import shadbala
+from report_engine import build_report
+from fastapi.responses import Response
 from ashtakavarga_engine import ashtakavarga
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 import math
@@ -175,11 +178,14 @@ def chart(b: Birth):
         rahu = pos[0]%360
         planets.append(details('Rahu',rahu,pos[3],lagna_sign))
         planets.append(details('Ketu',(rahu+180)%360,pos[3],lagna_sign))
-        return {'name':b.name,'place':b.place,'local_time':local.isoformat(),'utc_time':utc.isoformat(),
+        return {'name':b.name,'place':b.place,'date_of_birth':b.date,'time_of_birth':b.time,
+                'timezone':b.timezone,'latitude':b.latitude,'longitude':b.longitude,
+                'local_time':local.isoformat(),'utc_time':utc.isoformat(),
                 'julian_day_ut':jd,'ayanamsha':'Lahiri','ayanamsha_degrees':round(swe.get_ayanamsa_ut(jd),7),
                 'nodes':b.nodes,'house_system':'Whole sign (Rashi)','ephemeris':'Swiss Ephemeris Moshier',
                 'ascendant_sign':SIGNS[lagna_sign], 'planets':planets,
                 'analysis':analyze(planets),
+                'shadbala':shadbala(planets),
                 'ashtakavarga':ashtakavarga(planets),
                 'vimshottari':vimshottari(next(p['longitude'] for p in planets if p['name']=='Moon'),utc),
                 'vargas': {f'D{d}':build_varga(planets,d) for d in DIVISIONS}, 'available_vargas':[f'D{d}' for d in DIVISIONS]}
@@ -189,3 +195,10 @@ def chart(b: Birth):
         raise HTTPException(status_code=500,detail=f'Calculation failed: {exc}')
 
 app.mount('/', StaticFiles(directory=str(Path(__file__).resolve().parent),html=True),name='frontend')
+
+
+@app.post('/api/report/pdf')
+def report_pdf(b: Birth):
+    data = chart(b)
+    content = build_report(data)
+    return Response(content=content,media_type='application/pdf',headers={'Content-Disposition':'attachment; filename="kundli-complete.pdf"'})

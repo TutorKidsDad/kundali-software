@@ -5,7 +5,7 @@
  const short={Ascendant:'Asc',Sun:'Su',Moon:'Mo',Mars:'Ma',Mercury:'Me',Jupiter:'Ju',Venus:'Ve',Saturn:'Sa',Rahu:'Ra',Ketu:'Ke'};
  const hiNames={Ascendant:'लग्न',Sun:'सूर्य',Moon:'चन्द्र',Mars:'मंगल',Mercury:'बुध',Jupiter:'गुरु',Venus:'शुक्र',Saturn:'शनि',Rahu:'राहु',Ketu:'केतु'};
  const buttons=[...document.querySelectorAll('.house')];
- let lang='en',result=null,selected=1,activeVarga='D1';
+ let lang='en',result=null,selected=1,activeVarga='D1',lastBirth=null;
  const chartData=()=>!result?null:activeVarga==='D1'?result:result.vargas?.[activeVarga];
  const t=k=>translations[lang][k]||translations.en[k]||k;
  function sign(i){return (lang==='hi'?signsHi:signsEn)[i%12]}
@@ -37,7 +37,7 @@
  }
  document.querySelectorAll('.varga-tab').forEach(b=>b.addEventListener('click',()=>{activeVarga=b.dataset.varga;selected=1;render()}));
  buttons.forEach(b=>b.addEventListener('click',()=>{selected=+b.dataset.house;render()}));
- document.getElementById('language').addEventListener('change',e=>{lang=e.target.value;render();if(result)renderDasha(false)});
+ document.getElementById('language').addEventListener('change',e=>{lang=e.target.value;render();if(result){renderDasha(false);renderShadbala()}});
  
  // Geocoding is triggered by the user, not on every keystroke.
  // Open-Meteo returns coordinates and an IANA timezone; no backend change needed.
@@ -83,7 +83,7 @@
   e.preventDefault();const status=document.getElementById('form-status');status.textContent='Calculating…';
   const get=id=>document.getElementById(id).value;
   const body={name:get('person-name'),date:get('birth-date'),time:get('birth-time'),place:get('birth-place'),latitude:Number(get('latitude')),longitude:Number(get('longitude')),timezone:get('timezone'),ayanamsha:get('ayanamsha'),nodes:get('nodes')};
-  try {const response=await fetch(`${API_BASE}/api/chart`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});let data;try{data=await response.json()}catch{data={}}if(!response.ok)throw Error(typeof data.detail==='string'?data.detail:`API request failed (HTTP ${response.status})`);result=data;selected=1;document.getElementById('chart-caption').textContent=`${body.name||'Birth chart'} · ${body.place} · ${body.date} ${body.time} · ${data.ascendant_sign} Lagna`;
+  try {const response=await fetch(`${API_BASE}/api/chart`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});let data;try{data=await response.json()}catch{data={}}if(!response.ok)throw Error(typeof data.detail==='string'?data.detail:`API request failed (HTTP ${response.status})`);result=data;lastBirth=body;document.getElementById('download-pdf').disabled=false;document.getElementById('download-json').disabled=false;renderShadbala();selected=1;document.getElementById('chart-caption').textContent=`${body.name||'Birth chart'} · ${body.place} · ${body.date} ${body.time} · ${data.ascendant_sign} Lagna`;
    status.textContent=`Calculated successfully · ${data.ayanamsha} · ${data.house_system}`;render();renderDasha();renderAnalysis();renderAshta();
   }catch(err){const message=err instanceof TypeError?'Could not reach the Kundli API. Check your internet connection, Render deployment status, and backend CORS settings.':err.message;status.textContent=`Error: ${message}`;}
  });
@@ -109,6 +109,23 @@
   a.yoga_checks.matches.forEach(item=>{const div=document.createElement('div');div.className='yoga-item';const strong=document.createElement('strong');strong.textContent=item.name;const desc=document.createElement('p');desc.textContent=item.rule;div.append(strong,desc);box.append(div)});
  }
 
+ function renderShadbala(){
+  const sh=result?.shadbala;if(!sh)return;
+  document.getElementById('shadbala-status').textContent=sh.note;
+  const body=document.getElementById('shadbala-body');body.replaceChildren();
+  sh.planets.forEach(p=>{const tr=document.createElement('tr');
+   [lang==='hi'?hiNames[p.name]:p.name,p.sthana_subcomponents?.uchcha_bala ?? '—',p.components.dig_bala ?? '—',p.components.naisargika_bala,p.calculated_partial_virupas ?? '—','Pending validation'].forEach(v=>{const td=document.createElement('td');td.textContent=v;tr.append(td)});body.append(tr)});
+ }
+ const saveBlob=(blob,filename)=>{const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=filename;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000)};
+ const safeName=()=>((lastBirth?.name||'kundli').trim().replace(/[^a-z0-9_-]+/gi,'_').slice(0,45)||'kundli');
+ document.getElementById('download-json').addEventListener('click',()=>{if(!result)return;saveBlob(new Blob([JSON.stringify(result,null,2)],{type:'application/json'}),safeName()+'-kundli.json')});
+ document.getElementById('download-pdf').addEventListener('click',async()=>{
+  if(!lastBirth)return;const button=document.getElementById('download-pdf'),status=document.getElementById('download-status');button.disabled=true;status.textContent='Preparing complete PDF…';
+  try{const res=await fetch(`${API_BASE}/api/report/pdf`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(lastBirth)});
+   if(!res.ok)throw Error('Report API returned HTTP '+res.status);saveBlob(await res.blob(),safeName()+'-kundli.pdf');status.textContent='PDF downloaded.';
+  }catch(e){status.textContent='PDF failed: '+e.message+'. Deploy updated backend and requirements on Render.'}
+  finally{button.disabled=false}
+ });
  function renderAshta(){
   const a=result?.ashtakavarga;if(!a)return;
   document.getElementById('ashta-summary').textContent=`${a.method} · ${a.total} total bindus`;
