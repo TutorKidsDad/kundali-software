@@ -6,6 +6,42 @@ COMPONENTS=('sthana_bala','dig_bala','kala_bala','cheshta_bala','naisargika_bala
 def shortest(a,b): return abs((a-b+180)%360-180)
 OWN_SIGNS={'Sun':{4},'Moon':{3},'Mars':{0,7},'Mercury':{2,5},'Jupiter':{8,11},'Venus':{1,6},'Saturn':{9,10}}
 SAPTAVARGA=(1,2,3,7,9,12,30)
+
+# Natural (naisargika) planetary relationships used for dignity diagnostics.
+# Values: +1 friend, 0 neutral, -1 enemy. Rahu/Ketu excluded.
+NATURAL_RELATIONS={
+ 'Sun':{'Moon':1,'Mars':1,'Mercury':0,'Jupiter':1,'Venus':-1,'Saturn':-1},
+ 'Moon':{'Sun':1,'Mars':0,'Mercury':1,'Jupiter':0,'Venus':0,'Saturn':0},
+ 'Mars':{'Sun':1,'Moon':1,'Mercury':-1,'Jupiter':1,'Venus':0,'Saturn':0},
+ 'Mercury':{'Sun':1,'Moon':-1,'Mars':0,'Jupiter':0,'Venus':1,'Saturn':0},
+ 'Jupiter':{'Sun':1,'Moon':1,'Mars':1,'Mercury':-1,'Venus':-1,'Saturn':0},
+ 'Venus':{'Sun':-1,'Moon':-1,'Mars':0,'Mercury':1,'Jupiter':0,'Saturn':1},
+ 'Saturn':{'Sun':-1,'Moon':-1,'Mars':-1,'Mercury':1,'Jupiter':0,'Venus':1}}
+SIGN_LORDS=('Mars','Venus','Mercury','Moon','Sun','Mercury','Venus','Mars','Jupiter','Saturn','Saturn','Jupiter')
+RELATION_NAMES={-2:'great_enemy',-1:'enemy',0:'neutral',1:'friend',2:'great_friend'}
+def temporary_friend(a,b):
+    # Planet B in houses 2,3,4,10,11,12 from planet A.
+    relative=(int(b//30)-int(a//30))%12+1
+    return 1 if relative in (2,3,4,10,11,12) else -1
+def compound_relationship(planet,other,lookup):
+    if planet==other: return 'own'
+    score=NATURAL_RELATIONS[planet][other]+temporary_friend(
+        lookup[planet]['longitude'],lookup[other]['longitude'])
+    return RELATION_NAMES[score]
+
+SAPTAVARGA_POINTS={'moolatrikona':45.,'own':30.,'great_friend':22.5,'friend':15.,'neutral':7.5,'enemy':3.75,'great_enemy':1.875}
+MOOLATRIKONA={'Sun':(4,0,20),'Moon':(1,4,30),'Mars':(0,0,12),'Mercury':(5,16,20),'Jupiter':(8,0,10),'Venus':(6,0,15),'Saturn':(10,0,20)}
+def score_saptavargaja(name,longitude,placements):
+    if set(placements)!={f'D{n}' for n in SAPTAVARGA}: return None
+    total=0.
+    for division in SAPTAVARGA:
+        entry=placements[f'D{division}']; sign=entry['sign_index']; mt_sign,lo,hi=MOOLATRIKONA[name]
+        if division==1 and sign==mt_sign and lo<=longitude%30<hi: dignity='moolatrikona'
+        elif entry['own_sign']: dignity='own'
+        else: dignity=entry['compound_relationship_to_lord']
+        value=SAPTAVARGA_POINTS[dignity];entry['dignity']=dignity;entry['virupas']=value;total+=value
+    return round(total,4)
+
 def shadbala(planets, varga_sign_fn=None):
 
     lookup={p['name']:p for p in planets}
@@ -51,16 +87,24 @@ def shadbala(planets, varga_sign_fn=None):
                 mapped=int(longitude//30) if division==1 else varga_sign_fn(longitude,division)
                 varga_placements[f'D{division}']={'sign_index':mapped,
                     'sign_number':mapped+1,'own_sign':mapped in OWN_SIGNS[name]}
+        relationships={other:compound_relationship(name,other,lookup)
+                       for other in NATURAL_RELATIONS[name]}
+        for placement in varga_placements.values():
+            lord=SIGN_LORDS[placement['sign_index']]
+            placement['sign_lord']=lord
+            placement['compound_relationship_to_lord']=(
+                'own' if lord==name else relationships[lord])
+        saptavarga_score=score_saptavargaja(name,longitude,varga_placements) if varga_placements else None
         components={key:None for key in COMPONENTS}
         components['dig_bala']=round(dig,4)
         components['naisargika_bala']=round(natural,4)
         rows.append({'name':name,'components':components,
-                     'sthana_subcomponents':{'uchcha_bala':round(uchcha,4),'ojhayugma_bala':ojha,'kendradi_bala_whole_sign':kendradi,'drekkana_bala':drekkana},
+                     'sthana_subcomponents':{'saptavargaja_bala':saptavarga_score,'uchcha_bala':round(uchcha,4),'ojhayugma_bala':ojha,'kendradi_bala_whole_sign':kendradi,'drekkana_bala':drekkana},
                      'kala_subcomponents':{'paksha_bala':round(paksha,4)},
-                     'calculated_partial_virupas':round(dig+natural+uchcha+kendradi+(ojha or 0)+drekkana+paksha,4),
-                     'saptavargaja_diagnostics':{'placements':varga_placements,'own_sign_count':sum(v['own_sign'] for v in varga_placements.values()),'bala_virupas':None,'status':'placements_only_not_scored'},
+                     'calculated_partial_virupas':round(dig+natural+uchcha+kendradi+(ojha or 0)+drekkana+paksha+(saptavarga_score or 0),4),
+                     'saptavargaja_diagnostics':{'planetary_relationships':relationships,'placements':varga_placements,'own_sign_count':sum(v['own_sign'] for v in varga_placements.values()),'bala_virupas':saptavarga_score,'status':'scored_pending_reference_validation' if saptavarga_score is not None else 'unavailable'},
                      'motion_diagnostics':{'longitude_speed_deg_per_day':lookup[name].get('longitude_speed_deg_per_day'), 'retrograde':lookup[name].get('retrograde')},
                      'total_virupas':None,'total_rupas':None,'meets_minimum':None})
     return {'status':'partial_not_validated','unit':'virupa',
-            'note':'Incremental diagnostic only: Saptavargaja D1/D2/D3/D7/D9/D12/D30 placements and own-sign indicators added; Saptavargaja Bala points are NOT calculated. Saptavargaja, remaining Kala terms, Cheshta and Drik are NOT implemented. Dig and Kendradi use whole-sign approximations. Mercury/Saturn Ojhayugma remains unresolved. Paksha classification follows a stated convention (Mercury treated as benefic). Partial subtotal is NOT full Shadbala and MUST NOT be used for strength verdicts.',
+            'note':'Incremental diagnostic only: Saptavargaja D1/D2/D3/D7/D9/D12/D30 placements and own-sign indicators added; Natural, temporary and compound friendships and sign lords are provided as diagnostics; Saptavargaja points use a declared Raman-style convention; reference-chart verification pending. Remaining Kala terms, Cheshta and Drik are NOT implemented. Dig and Kendradi use whole-sign approximations. Mercury/Saturn Ojhayugma remains unresolved. Paksha classification follows a stated convention (Mercury treated as benefic). Partial subtotal is NOT full Shadbala and MUST NOT be used for strength verdicts.',
             'planets':rows}

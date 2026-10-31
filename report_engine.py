@@ -97,15 +97,15 @@ def build_report(data):
     story.append(para(sh.get('note','Shadbala unavailable.')))
     table(['Planet','Uchcha*','Ojha*','Kendra*','Drekkana','Paksha','Dig','Natural','Partial*','Full'],[[p['name'],p.get('sthana_subcomponents',{}).get('uchcha_bala','-'),p.get('sthana_subcomponents',{}).get('ojhayugma_bala') if p.get('sthana_subcomponents',{}).get('ojhayugma_bala') is not None else '-',p.get('sthana_subcomponents',{}).get('kendradi_bala_whole_sign','-'),p.get('sthana_subcomponents',{}).get('drekkana_bala','-'),p.get('kala_subcomponents',{}).get('paksha_bala','-'),p['components'].get('dig_bala','-'),p['components']['naisargika_bala'],p.get('calculated_partial_virupas','-'),'Pending'] for p in sh.get('planets',[])])
     story.append(Spacer(1,15));story.append(para('Calculated results are based on the application conventions; Shadbala is partial: Kendradi uses whole-sign houses and Ojhayugma is unavailable for Mercury/Saturn. Partial subtotals are not complete strength scores.'))
-    heading('Saptavargaja placement diagnostics (not Bala scores)')
-    story.append(para('Seven divisional placements and own-sign flags only. Dignity scoring and compound friendships remain unimplemented.'))
-    table(['Planet','D1','D2','D3','D7','D9','D12','D30','Own count'],
+    heading('Saptavargaja Bala (provisional scoring)')
+    story.append(para('Seven varga dignity scores; reference-chart comparison pending.'))
+    table(['Planet','D1','D2','D3','D7','D9','D12','D30','Total'],
           [[p['name']]+[
-              str(p.get('saptavargaja_diagnostics',{}).get('placements',{}).get('D'+str(d),{}).get('sign_number','-'))+
+              str(p.get('saptavargaja_diagnostics',{}).get('placements',{}).get('D'+str(d),{}).get('virupas','-'))+
               ('*' if p.get('saptavargaja_diagnostics',{}).get('placements',{}).get('D'+str(d),{}).get('own_sign') else '')
               for d in (1,2,3,7,9,12,30)
-          ]+[p.get('saptavargaja_diagnostics',{}).get('own_sign_count','-')] for p in sh.get('planets',[])])
-    story.append(para('* means own sign. This table is not a Saptavargaja Bala calculation.'))
+          ]+[p.get('saptavargaja_diagnostics',{}).get('bala_virupas','-')] for p in sh.get('planets',[])])
+    story.append(para('* means own sign. Scores provisional; full Shadbala unavailable.'))
     def footer(canvas, document):
         canvas.saveState()
         canvas.setStrokeColor(HexColor('#d7e0eb'))
