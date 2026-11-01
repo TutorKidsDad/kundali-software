@@ -134,6 +134,74 @@ class Birth(BaseModel):
     ayanamsha: str = 'lahiri'
     nodes: str = 'mean'
 
+
+WEEKDAY_LORDS = ['Moon','Mars','Mercury','Jupiter','Venus','Saturn','Sun']
+HORA_ORDER = ['Saturn','Jupiter','Mars','Sun','Venus','Mercury','Moon']
+def kala_time_context(b, jd):
+    """Derive local weekday and sunrise-based hora/tribhaga diagnostics."""
+    local_dt = datetime.fromisoformat(f'{b.date}T{b.time}')
+    # Convert local civil midnight to UT, so sunrise/sunset belong to the
+    # requested local birth date even when UTC date differs.
+    midnight_local = local_dt.replace(hour=0, minute=0, second=0, microsecond=0,
+                                      tzinfo=ZoneInfo(b.timezone))
+    midnight_utc = midnight_local.astimezone(timezone.utc)
+    start_jd = swe.julday(midnight_utc.year, midnight_utc.month,
+                         midnight_utc.day,
+                         midnight_utc.hour + midnight_utc.minute/60 +
+                         midnight_utc.second/3600)
+    geo = (b.longitude, b.latitude, 0)
+    flags = swe.FLG_MOSEPH
+    rise_status, rise = swe.rise_trans(start_jd, swe.SUN, swe.CALC_RISE,
+                                       geo, 0, 15, flags)
+    set_status, setting = swe.rise_trans(start_jd, swe.SUN, swe.CALC_SET,
+                                         geo, 0, 15, flags)
+    if rise_status != 0 or set_status != 0:
+        return {'status':'sunrise_sunset_unavailable',
+                'weekday_lord':WEEKDAY_LORDS[local_dt.weekday()]}
+    sunrise, sunset = rise[0], setting[0]
+    # If the birth occurs after sunset, the planetary hora continues through
+    # the night; the next sunrise is the boundary for the next weekday.
+    if sunset <= sunrise or not (sunrise <= jd < sunrise + 1.5):
+        return {'status':'invalid_solar_day_interval',
+                'weekday_lord':WEEKDAY_LORDS[local_dt.weekday()]}
+    is_day = sunrise <= jd < sunset
+    if is_day:
+        segment_start, segment_end = sunrise, sunset
+    else:
+        segment_start, segment_end = sunset, sunrise + 1.0
+        if jd < sunrise:
+            segment_start -= 1.0
+            segment_end = sunrise
+    elapsed = max(0.0, min(1.0, (jd-segment_start)/(segment_end-segment_start)))
+    third = min(2, int(elapsed*3))
+    # The weekday lord owns the first hora from sunrise; planetary sequence
+    # proceeds in the standard Chaldean order continuously through the night.
+    day_index = local_dt.weekday()
+    weekday_lord = WEEKDAY_LORDS[day_index]
+    day_start = sunrise
+    if jd < sunrise:
+        # Birth before sunrise belongs to the preceding sunrise-based weekday.
+        day_start = sunrise - 1.0
+        weekday_lord = WEEKDAY_LORDS[(day_index-1)%7]
+    hour_length = (sunset-sunrise)/12 if jd >= sunrise and jd < sunset else (sunrise+1.0-sunset)/12
+    if jd < sunrise:
+        night_start = sunrise-1.0
+        hour_length = (sunrise-night_start)/12
+        elapsed_horas = (jd-night_start)/hour_length
+    elif jd < sunset:
+        elapsed_horas = (jd-sunrise)/((sunset-sunrise)/12)
+    else:
+        elapsed_horas = 12+(jd-sunset)/((sunrise+1.0-sunset)/12)
+    hora_number = int(elapsed_horas)%24
+    first_index = HORA_ORDER.index(weekday_lord)
+    hora_lord = HORA_ORDER[(first_index+hora_number)%7]
+    return {'status':'ok','weekday_lord':weekday_lord,'hora_lord':hora_lord,
+            'is_daytime':is_day,'tribhaga_index':third+1,
+            'sunrise_jd_ut':sunrise,'sunset_jd_ut':sunset,
+            'hora_number_from_sunrise':hora_number+1,
+            'tribhaga_ruler_score':None,
+            'note':'Vara/Hora lord diagnostics; exact Kala subcomponent scoring still requires reference validation.'}
+
 def details(name, longitude, speed, lagna_sign):
     longitude %= 360
     sign_index = int(longitude // 30)
@@ -185,7 +253,7 @@ def chart(b: Birth):
                 'nodes':b.nodes,'house_system':'Whole sign (Rashi)','ephemeris':'Swiss Ephemeris Moshier',
                 'ascendant_sign':SIGNS[lagna_sign], 'planets':planets,
                 'analysis':analyze(planets),
-                'shadbala':shadbala(planets,varga_sign),
+                'shadbala':shadbala(planets,varga_sign,kala_time_context(b,jd)),
                 'ashtakavarga':ashtakavarga(planets),
                 'vimshottari':vimshottari(next(p['longitude'] for p in planets if p['name']=='Moon'),utc),
                 'vargas': {f'D{d}':build_varga(planets,d) for d in DIVISIONS}, 'available_vargas':[f'D{d}' for d in DIVISIONS]}

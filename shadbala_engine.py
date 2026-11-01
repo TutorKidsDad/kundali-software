@@ -42,7 +42,7 @@ def score_saptavargaja(name,longitude,placements):
         value=SAPTAVARGA_POINTS[dignity];entry['dignity']=dignity;entry['virupas']=value;total+=value
     return round(total,4)
 
-def shadbala(planets, varga_sign_fn=None):
+def shadbala(planets, varga_sign_fn=None, kala_context=None):
 
     lookup={p['name']:p for p in planets}
     asc=lookup['Ascendant']['longitude']
@@ -96,15 +96,25 @@ def shadbala(planets, varga_sign_fn=None):
                 'own' if lord==name else relationships[lord])
         saptavarga_score=score_saptavargaja(name,longitude,varga_placements) if varga_placements else None
         components={key:None for key in COMPONENTS}
+        kala_context = kala_context or {}
+        weekday_lord = kala_context.get('weekday_lord')
+        hora_lord = kala_context.get('hora_lord')
+        vara_bala = 45.0 if weekday_lord == name else 0.0 if weekday_lord else None
+        hora_bala = 60.0 if hora_lord == name else 0.0 if hora_lord else None
         components['dig_bala']=round(dig,4)
         components['naisargika_bala']=round(natural,4)
         rows.append({'name':name,'components':components,
                      'sthana_subcomponents':{'saptavargaja_bala':saptavarga_score,'uchcha_bala':round(uchcha,4),'ojhayugma_bala':ojha,'kendradi_bala_whole_sign':kendradi,'drekkana_bala':drekkana},
-                     'kala_subcomponents':{'paksha_bala':round(paksha,4)},
-                     'calculated_partial_virupas':round(dig+natural+uchcha+kendradi+(ojha or 0)+drekkana+paksha+(saptavarga_score or 0),4),
+                     'kala_subcomponents':{'paksha_bala':round(paksha,4),
+                         'vara_bala':vara_bala,'hora_bala':hora_bala,
+                         'natonnata_bala':None,'tribhaga_bala':None,
+                         'abda_bala':None,'masa_bala':None,
+                         'ayana_bala':None,'yuddha_bala':None,
+                         'time_diagnostics':kala_context},
+                     'calculated_partial_virupas':round(dig+natural+uchcha+kendradi+(ojha or 0)+drekkana+paksha+(saptavarga_score or 0)+(vara_bala or 0)+(hora_bala or 0),4),
                      'saptavargaja_diagnostics':{'planetary_relationships':relationships,'placements':varga_placements,'own_sign_count':sum(v['own_sign'] for v in varga_placements.values()),'bala_virupas':saptavarga_score,'status':'scored_pending_reference_validation' if saptavarga_score is not None else 'unavailable'},
                      'motion_diagnostics':{'longitude_speed_deg_per_day':lookup[name].get('longitude_speed_deg_per_day'), 'retrograde':lookup[name].get('retrograde')},
                      'total_virupas':None,'total_rupas':None,'meets_minimum':None})
     return {'status':'partial_not_validated','unit':'virupa',
-            'note':'Incremental diagnostic only: Saptavargaja D1/D2/D3/D7/D9/D12/D30 placements and own-sign indicators added; Natural, temporary and compound friendships and sign lords are provided as diagnostics; Saptavargaja points use a declared Raman-style convention; reference-chart verification pending. Remaining Kala terms, Cheshta and Drik are NOT implemented. Dig and Kendradi use whole-sign approximations. Mercury/Saturn Ojhayugma remains unresolved. Paksha classification follows a stated convention (Mercury treated as benefic). Partial subtotal is NOT full Shadbala and MUST NOT be used for strength verdicts.',
+            'note':'Incremental diagnostic only: Saptavargaja D1/D2/D3/D7/D9/D12/D30 placements and own-sign indicators added; Natural, temporary and compound friendships and sign lords are provided as diagnostics; Saptavargaja points use a declared Raman-style convention; reference-chart verification pending. Kala now includes Paksha plus sunrise-based Vara/Hora lord diagnostics and points; Natonnata, Tribhaga scoring, Abda, Masa, Ayana and Yuddha remain withheld. Cheshta and Drik remain pending. Dig and Kendradi use whole-sign approximations. Mercury/Saturn Ojhayugma remains unresolved. Paksha classification follows a stated convention (Mercury treated as benefic). Partial subtotal is NOT full Shadbala and MUST NOT be used for strength verdicts.',
             'planets':rows}
