@@ -1,3 +1,5 @@
+> Historical development checkpoint. Any pending/not-implemented statements below describe the earlier incremental build and are superseded by `PHASE7_COMPLETION_NOTES.md` and `SHADBALA_STATUS.md` in this ZIP.
+
 # Phase 7: Kala Bala extension (partial, explicit scope)
 
 Added birth-local-date sunrise/sunset calculation through Swiss Ephemeris, sunrise-based weekday (Vara) lord, planetary Hora lord, daytime/night-time flag and third-of-period index. Vara lord receives 45 virupas; Hora lord receives 60 virupas. The hora sequence uses the Chaldean order and advances continuously from sunrise through the night. These scores are exposed under `kala_subcomponents` and included in the existing diagnostic partial subtotal only.

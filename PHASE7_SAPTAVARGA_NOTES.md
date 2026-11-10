@@ -1,3 +1,5 @@
+> Historical development checkpoint. Any pending/not-implemented statements below describe the earlier incremental build and are superseded by `PHASE7_COMPLETION_NOTES.md` and `SHADBALA_STATUS.md` in this ZIP.
+
 # Phase 7: Saptavargaja diagnostic groundwork
 
 This release adds seven divisional sign placements (D1, D2, D3, D7, D9, D12, D30) and marks own-sign placements for each of the seven classical planets. It reuses the existing user's workbook mapping in backend.varga_sign. No Saptavargaja Bala points are assigned, and no Shadbala totals are reported.

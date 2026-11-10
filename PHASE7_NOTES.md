@@ -1,3 +1,5 @@
+> Historical development checkpoint. Any pending/not-implemented statements below describe the earlier incremental build and are superseded by `PHASE7_COMPLETION_NOTES.md` and `SHADBALA_STATUS.md` in this ZIP.
+
 # Phase 7 incremental upgrade
 
 ## Implemented

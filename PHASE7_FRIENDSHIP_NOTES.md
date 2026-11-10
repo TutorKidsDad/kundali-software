@@ -1,3 +1,5 @@
+> Historical development checkpoint. Any pending/not-implemented statements below describe the earlier incremental build and are superseded by `PHASE7_COMPLETION_NOTES.md` and `SHADBALA_STATUS.md` in this ZIP.
+
 # Phase 7: Saptavargaja friendship diagnostics
 
 Adds natural, temporary, and compound friendship calculations for the seven classical planets, and sign-lord relationships for D1, D2, D3, D7, D9, D12 and D30 placements. Natural relationships use the conventional seven-planet matrix; temporary friends are planets located in the 2nd, 3rd, 4th, 10th, 11th or 12th sign from the reference planet. Compound scores are sums of +1/0/-1 natural and +1/-1 temporary relations.

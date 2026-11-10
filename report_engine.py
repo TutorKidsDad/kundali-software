@@ -92,20 +92,40 @@ def build_report(data):
     heading('Ashtakavarga')
     story.append(para('SAV total: '+str(av.get('total','-'))))
     table(['Graha']+[str(i) for i in range(1,13)],[[name]+vals for name,vals in av.get('bav',{}).items()]+[['SAV']+av.get('sav',[])])
-    heading('Shadbala - Calculation Status')
+    heading('Shadbala - Sixfold Planetary Strength')
     sh=data.get('shadbala',{})
-    story.append(para(sh.get('note','Shadbala unavailable.')))
-    table(['Planet','Uchcha*','Ojha*','Kendra*','Drekkana','Paksha','Dig','Natural','Partial*','Full'],[[p['name'],p.get('sthana_subcomponents',{}).get('uchcha_bala','-'),p.get('sthana_subcomponents',{}).get('ojhayugma_bala') if p.get('sthana_subcomponents',{}).get('ojhayugma_bala') is not None else '-',p.get('sthana_subcomponents',{}).get('kendradi_bala_whole_sign','-'),p.get('sthana_subcomponents',{}).get('drekkana_bala','-'),p.get('kala_subcomponents',{}).get('paksha_bala','-'),p['components'].get('dig_bala','-'),p['components']['naisargika_bala'],p.get('calculated_partial_virupas','-'),'Pending'] for p in sh.get('planets',[])])
-    story.append(Spacer(1,15));story.append(para('Calculated results are based on the application conventions; Shadbala is partial: Kendradi uses whole-sign houses and Ojhayugma is unavailable for Mercury/Saturn. Partial subtotals are not complete strength scores.'))
-    heading('Saptavargaja Bala (provisional scoring)')
-    story.append(para('Seven varga dignity scores; reference-chart comparison pending.'))
+    story.append(para(sh.get('methodology','Shadbala calculations and conventions.')))
+    table(['Planet','Sthana','Dig','Kala','Cheshta','Naisargika','Drik','Total V','Total R','Required V','Ratio','Meets'],
+      [[p['name']]+[p.get('components',{}).get(k,'-') for k in
+        ('sthana_bala','dig_bala','kala_bala','cheshta_bala','naisargika_bala','drik_bala')]+
+        [p.get('total_virupas') if p.get('total_virupas') is not None else '-',
+         p.get('total_rupas') if p.get('total_rupas') is not None else '-',
+         p.get('minimum_required_virupas','-'),
+         p.get('strength_ratio') if p.get('strength_ratio') is not None else '-',
+         ('Yes' if p.get('meets_minimum') else 'No') if p.get('meets_minimum') is not None else 'Incomplete']
+       for p in sh.get('planets',[])])
+    heading('Sthana Bala Subcomponents')
+    table(['Planet','Uchcha','Saptavargaja','Ojhayugma','Kendradi','Drekkana'],
+      [[p['name']]+[p.get('sthana_subcomponents',{}).get(k) if p.get('sthana_subcomponents',{}).get(k) is not None else '-'
+          for k in ('uchcha_bala','saptavargaja_bala','ojhayugma_bala','kendradi_bala','drekkana_bala')]
+       for p in sh.get('planets',[])])
+    heading('Kala Bala Subcomponents')
+    table(['Planet','Natonnata','Paksha','Tribhaga','Abda','Masa','Vara','Hora'],
+      [[p['name']]+[p.get('kala_subcomponents',{}).get(k) if p.get('kala_subcomponents',{}).get(k) is not None else '-'
+          for k in ('natonnata_bala','paksha_bala','tribhaga_bala','abda_bala','masa_bala','vara_bala','hora_bala')]
+       for p in sh.get('planets',[])])
+    table(['Planet','Ayana','Yuddha','Cheshta','Drik'],
+      [[p['name'],p.get('kala_subcomponents',{}).get('ayana_bala','-'),
+        p.get('kala_subcomponents',{}).get('yuddha_bala') if p.get('kala_subcomponents',{}).get('yuddha_bala') is not None else '-',
+        p.get('components',{}).get('cheshta_bala','-'),p.get('components',{}).get('drik_bala','-')]
+       for p in sh.get('planets',[])])
+    story.append(para('Important: this build provides a provisional calculation, not an independently certified reference implementation. The methodology notes identify calendar proxies and approximations for Abda/Masa, Cheshta and Drik. Planetary-war winner adjustments are withheld when a close-war candidate requires additional comparison. Use the totals for software testing, not as final interpretive verdicts, until chart-by-chart validation is completed.'))
+    heading('Saptavargaja placements')
     table(['Planet','D1','D2','D3','D7','D9','D12','D30','Total'],
           [[p['name']]+[
-              str(p.get('saptavargaja_diagnostics',{}).get('placements',{}).get('D'+str(d),{}).get('virupas','-'))+
-              ('*' if p.get('saptavargaja_diagnostics',{}).get('placements',{}).get('D'+str(d),{}).get('own_sign') else '')
+              str(p.get('saptavargaja_diagnostics',{}).get('placements',{}).get('D'+str(d),{}).get('virupas','-'))
               for d in (1,2,3,7,9,12,30)
           ]+[p.get('saptavargaja_diagnostics',{}).get('bala_virupas','-')] for p in sh.get('planets',[])])
-    story.append(para('* means own sign. Scores provisional; full Shadbala unavailable.'))
     def footer(canvas, document):
         canvas.saveState()
         canvas.setStrokeColor(HexColor('#d7e0eb'))

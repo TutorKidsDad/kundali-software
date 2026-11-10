@@ -1,3 +1,5 @@
+> Historical development checkpoint. Any pending/not-implemented statements below describe the earlier incremental build and are superseded by `PHASE7_COMPLETION_NOTES.md` and `SHADBALA_STATUS.md` in this ZIP.
+
 Phase 7 refined: PDF page footers and Shadbala incremental components. Uchcha is a Sthana subcomponent; Dig uses whole-sign angular offsets, not measured quadrant cusps. Full Sthana, Kala, Cheshta, Drik and full total are not yet implemented. Never interpret partial subtotal as a full strength score. Back up before deployment.
 
 

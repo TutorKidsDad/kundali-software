@@ -137,7 +137,7 @@ class Birth(BaseModel):
 
 WEEKDAY_LORDS = ['Moon','Mars','Mercury','Jupiter','Venus','Saturn','Sun']
 HORA_ORDER = ['Saturn','Jupiter','Mars','Sun','Venus','Mercury','Moon']
-def kala_time_context(b, jd):
+def kala_time_context(b, jd, mc_longitude=None):
     """Derive local weekday and sunrise-based hora/tribhaga diagnostics."""
     local_dt = datetime.fromisoformat(f'{b.date}T{b.time}')
     # Convert local civil midnight to UT, so sunrise/sunset belong to the
@@ -158,9 +158,21 @@ def kala_time_context(b, jd):
     if rise_status != 0 or set_status != 0:
         return {'status':'sunrise_sunset_unavailable',
                 'weekday_lord':WEEKDAY_LORDS[local_dt.weekday()]}
-    sunrise, sunset = rise[0], setting[0]
-    # If the birth occurs after sunset, the planetary hora continues through
-    # the night; the next sunrise is the boundary for the next weekday.
+    today_sunrise, today_sunset = rise[0], setting[0]
+    before_local_sunrise = jd < today_sunrise
+    if before_local_sunrise:
+        prev_rise_status, prev_rise = swe.rise_trans(start_jd-1.0, swe.SUN, swe.CALC_RISE,
+                                                      geo, 0, 15, flags)
+        prev_set_status, prev_set = swe.rise_trans(start_jd-1.0, swe.SUN, swe.CALC_SET,
+                                                    geo, 0, 15, flags)
+        if prev_rise_status != 0 or prev_set_status != 0:
+            return {'status':'previous_sunrise_unavailable',
+                    'weekday_lord':WEEKDAY_LORDS[(local_dt.weekday()-1)%7]}
+        sunrise, sunset = prev_rise[0], prev_set[0]
+    else:
+        sunrise, sunset = today_sunrise, today_sunset
+    # Births after sunset and before the following sunrise belong to the
+    # preceding sunrise-based day and its Hora sequence.
     if sunset <= sunrise or not (sunrise <= jd < sunrise + 1.5):
         return {'status':'invalid_solar_day_interval',
                 'weekday_lord':WEEKDAY_LORDS[local_dt.weekday()]}
@@ -177,30 +189,34 @@ def kala_time_context(b, jd):
     # The weekday lord owns the first hora from sunrise; planetary sequence
     # proceeds in the standard Chaldean order continuously through the night.
     day_index = local_dt.weekday()
-    weekday_lord = WEEKDAY_LORDS[day_index]
-    day_start = sunrise
-    if jd < sunrise:
-        # Birth before sunrise belongs to the preceding sunrise-based weekday.
-        day_start = sunrise - 1.0
-        weekday_lord = WEEKDAY_LORDS[(day_index-1)%7]
+    weekday_lord = WEEKDAY_LORDS[(day_index-1)%7] if before_local_sunrise else WEEKDAY_LORDS[day_index]
     hour_length = (sunset-sunrise)/12 if jd >= sunrise and jd < sunset else (sunrise+1.0-sunset)/12
-    if jd < sunrise:
-        night_start = sunrise-1.0
-        hour_length = (sunrise-night_start)/12
-        elapsed_horas = (jd-night_start)/hour_length
-    elif jd < sunset:
-        elapsed_horas = (jd-sunrise)/((sunset-sunrise)/12)
+    if before_local_sunrise or jd >= sunset:
+        elapsed_horas = 12+(jd-sunset)/((today_sunrise-sunset)/12)
     else:
-        elapsed_horas = 12+(jd-sunset)/((sunrise+1.0-sunset)/12)
+        elapsed_horas = (jd-sunrise)/((sunset-sunrise)/12)
     hora_number = int(elapsed_horas)%24
     first_index = HORA_ORDER.index(weekday_lord)
     hora_lord = HORA_ORDER[(first_index+hora_number)%7]
+    tribhaga_rulers = ['Mercury','Sun','Saturn'] if is_day else ['Moon','Venus','Mars']
+    tribhaga_ruler = tribhaga_rulers[third]
+    # Calendar weekday proxies for Abda/Masa lords; not the full Ahargana method.
+    effective_date = local_dt.date() - timedelta(days=1) if before_local_sunrise else local_dt.date()
+    abda_lord = WEEKDAY_LORDS[datetime(effective_date.year,1,1).weekday()]
+    masa_lord = WEEKDAY_LORDS[datetime(effective_date.year,effective_date.month,1).weekday()]
+    period_fraction = elapsed
+    sun_group_natonnata = (30.0 + 30.0*(1.0-abs(2.0*period_fraction-1.0))) if is_day else (30.0*(1.0-abs(2.0*period_fraction-1.0)))
+    natonnata_sun_group = sun_group_natonnata
     return {'status':'ok','weekday_lord':weekday_lord,'hora_lord':hora_lord,
+            'abda_lord':abda_lord,'masa_lord':masa_lord,
             'is_daytime':is_day,'tribhaga_index':third+1,
+            'tribhaga_ruler':tribhaga_ruler,
+            'natonnata_sun_group':natonnata_sun_group,
             'sunrise_jd_ut':sunrise,'sunset_jd_ut':sunset,
             'hora_number_from_sunrise':hora_number+1,
-            'tribhaga_ruler_score':None,
-            'note':'Vara/Hora lord diagnostics; exact Kala subcomponent scoring still requires reference validation.'}
+            'mc_longitude':mc_longitude,
+            'ic_longitude':(mc_longitude+180)%360 if mc_longitude is not None else None,
+            'note':'Abda/Masa use calendar weekday proxies; Natonnata uses sunrise/sunset segment interpolation.'}
 
 def details(name, longitude, speed, lagna_sign):
     longitude %= 360
@@ -234,13 +250,17 @@ def chart(b: Birth):
         flags = swe.FLG_MOSEPH | swe.FLG_SIDEREAL | swe.FLG_SPEED
         cusps, ascmc = swe.houses_ex(jd,b.latitude,b.longitude,b'P',flags=swe.FLG_SIDEREAL)
         asc = ascmc[0] % 360
+        mc = ascmc[1] % 360
         lagna_sign = int(asc//30)
         planets = [details('Ascendant',asc,0,lagna_sign)]
         for name, body in BODIES:
             pos, returned = swe.calc_ut(jd,body,flags)
             if not (returned & swe.FLG_SIDEREAL):
                 raise RuntimeError('Sidereal ephemeris calculation failed')
-            planets.append(details(name,pos[0],pos[3],lagna_sign))
+            item=details(name,pos[0],pos[3],lagna_sign)
+            eq, _ = swe.calc_ut(jd,body,swe.FLG_MOSEPH | swe.FLG_EQUATORIAL)
+            item['declination_deg']=round(eq[1],8)
+            planets.append(item)
         node_id = swe.MEAN_NODE if b.nodes == 'mean' else swe.TRUE_NODE
         pos, returned = swe.calc_ut(jd,node_id,flags)
         rahu = pos[0]%360
@@ -253,7 +273,8 @@ def chart(b: Birth):
                 'nodes':b.nodes,'house_system':'Whole sign (Rashi)','ephemeris':'Swiss Ephemeris Moshier',
                 'ascendant_sign':SIGNS[lagna_sign], 'planets':planets,
                 'analysis':analyze(planets),
-                'shadbala':shadbala(planets,varga_sign,kala_time_context(b,jd)),
+                'shadbala':shadbala(planets,varga_sign,{**kala_time_context(b,jd,mc),
+                    'desc_longitude':(asc+180)%360}),
                 'ashtakavarga':ashtakavarga(planets),
                 'vimshottari':vimshottari(next(p['longitude'] for p in planets if p['name']=='Moon'),utc),
                 'vargas': {f'D{d}':build_varga(planets,d) for d in DIVISIONS}, 'available_vargas':[f'D{d}' for d in DIVISIONS]}

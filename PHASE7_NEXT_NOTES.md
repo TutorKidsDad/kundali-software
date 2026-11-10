@@ -1,3 +1,5 @@
+> Historical development checkpoint. Any pending/not-implemented statements below describe the earlier incremental build and are superseded by `PHASE7_COMPLETION_NOTES.md` and `SHADBALA_STATUS.md` in this ZIP.
+
 # Phase 7 next: additional Sthana Bala groundwork
 
 - Added Ojhayugma Bala for Sun, Moon, Mars, Jupiter, Venus (15 per favorable sign and Navamsha). Mercury and Saturn deliberately unscored pending convention selection.

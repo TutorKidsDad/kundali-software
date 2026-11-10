@@ -111,11 +111,24 @@
 
  function renderShadbala(){
   const sh=result?.shadbala;if(!sh)return;
-  document.getElementById('shadbala-status').textContent=sh.note;
+  const status=document.getElementById('shadbala-status');
+  status.textContent=(sh.methodology||sh.note||'Shadbala calculation')+' Status: '+sh.status+'.';
   const body=document.getElementById('shadbala-body');body.replaceChildren();
-  sh.planets.forEach(p=>{const tr=document.createElement('tr');
-   [lang==='hi'?hiNames[p.name]:p.name,p.sthana_subcomponents?.uchcha_bala ?? '—',p.sthana_subcomponents?.ojhayugma_bala ?? '—',p.sthana_subcomponents?.kendradi_bala_whole_sign ?? '—',p.sthana_subcomponents?.drekkana_bala ?? '—',p.kala_subcomponents?.paksha_bala ?? '—',p.components.dig_bala ?? '—',p.components.naisargika_bala,p.calculated_partial_virupas ?? '—','Pending validation'].forEach(v=>{const td=document.createElement('td');td.textContent=v;tr.append(td)});body.append(tr)});
+  const details=document.getElementById('shadbala-details');details.replaceChildren();
+  const fmt=v=>v===null||v===undefined?'—':(typeof v==='number'?v.toFixed(2):v);
+  sh.planets.forEach(p=>{
+   const tr=document.createElement('tr'), c=p.components||{};
+   const vals=[lang==='hi'?hiNames[p.name]:p.name,c.sthana_bala,c.dig_bala,c.kala_bala,c.cheshta_bala,c.naisargika_bala,c.drik_bala,p.total_virupas,p.total_rupas,p.minimum_required_virupas,p.strength_ratio,
+    p.meets_minimum===null?'Incomplete':p.meets_minimum?'Meets minimum':'Below minimum'];
+   vals.forEach(v=>{const td=document.createElement('td');td.textContent=fmt(v);tr.append(td)});body.append(tr);
+   const s=p.sthana_subcomponents||{},k=p.kala_subcomponents||{};
+   const d=document.createElement('tr');
+   [p.name,s.uchcha_bala,s.saptavargaja_bala,s.ojhayugma_bala,s.kendradi_bala,s.drekkana_bala,
+    k.natonnata_bala,k.paksha_bala,k.tribhaga_bala,k.abda_bala,k.masa_bala,k.vara_bala,k.hora_bala,k.ayana_bala,k.yuddha_bala,
+    c.cheshta_bala,c.drik_bala].forEach(v=>{const td=document.createElement('td');td.textContent=fmt(v);d.append(td)});details.append(d);
+  });
  }
+
  const saveBlob=(blob,filename)=>{const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=filename;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000)};
  const safeName=()=>((lastBirth?.name||'kundli').trim().replace(/[^a-z0-9_-]+/gi,'_').slice(0,45)||'kundli');
  document.getElementById('download-json').addEventListener('click',()=>{if(!result)return;saveBlob(new Blob([JSON.stringify(result,null,2)],{type:'application/json'}),safeName()+'-kundli.json')});
